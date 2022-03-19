@@ -18,6 +18,7 @@ class Generator():
         results = []
         # logging.info(f'Imports: {self.imports}')
         for root_choice in self.choice_blocks:
+            logger.info(f'Root choice: {root_choice}')
             # Have to do the first roll out here, because technically the root choices are equivalent to choice blocks,
             # since there's no line to use as a choice.
             self.state = {}
@@ -31,11 +32,13 @@ class Generator():
         ordered_fragments = []
         values = []
         choice_groups = choice.choice_groups
+        logging.info(f'Unordered fragments: {choice.fragments}')
         for i, fragment in enumerate(choice.fragments):
             order = fragment.order
             if order == 'NONE':
                 order = math.inf
             heappush(ordered_fragments, (order, i, fragment))
+        logging.info(f'Ordered fragments: {ordered_fragments}')
         for _, i, fragment in ordered_fragments:
             value = self.evaluate_fragment(fragment, choice)
             heappush(values, (i, value))
@@ -46,6 +49,7 @@ class Generator():
         return result
 
     def evaluate_fragment(self, fragment, choice):
+        logging.info(f'Fragment: {fragment}')
         if fragment.type == 'TEXT':
             return fragment.value
 

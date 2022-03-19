@@ -5,7 +5,8 @@ from choice_fragment import ChoiceFragment
 from function import Function
 from function_parser import FunctionParser
 from subchoice_counter import SubchoiceCounter
-from constants import VARIABLE_REGEX, FUNCTION_REGEX, ARGUMENT_RE
+from common import find_matching_brace
+from constants import VARIABLE_REGEX, RESERVED_WORDS
 
 logger = logging.getLogger('choice_parser')
 
@@ -20,30 +21,39 @@ class ChoiceParser():
         fragments = []
         idx = 0
         text = ''
-        while idx != len(line):
-            ch = line[idx]
-            if ch in ['$', '@']:
-                text_fragment = ChoiceFragment(text)
-                text = ''
-                fragments.append(text_fragment)
-
-                if ch == '$':
-                    fragment, length = self.parse_subchoice_fragment(line, idx)
-                    self.num_subchoices.incr()
-                elif ch == '@':
-                    fragment, length = self.parse_control_fragment(line, idx)
-
-                fragments.append(fragment)
-                idx += length
-            else:
-                text += ch
-                idx += 1
-        if text:
-            text_fragment = ChoiceFragment(text)
-            fragments.append(text_fragment)
-
+        while idx < len(line):
+            # logging.info(f'line: {line}, idx: {idx} ({line[idx]})')
+            fragment, length = self.parse_single_fragment(line, idx)
+            idx += length
+            logging.info(f'fragment generated: {fragment}')
+            fragments.append(fragment)
         # logger.info(f'Fragments: {fragments}')
         return fragments
+
+    def parse_single_fragment(self, line, idx):
+        idx = idx
+        text = ''
+        length = None
+        if line[idx] == '$':
+            fragment, length = self.parse_subchoice_fragment(line, idx)
+            # logging.info(f'parse_subchoice_fragment.length: {length}')
+            self.num_subchoices.incr()
+        elif line[idx] =='@':
+            fragment, length = self.parse_control_fragment(line, idx)
+            # logging.info(f'parse_control_fragment.length: {length}')
+        else:
+            sc_loc = line.find('$', idx)
+            if sc_loc == -1:
+                sc_loc = len(line)
+            cf_loc = line.find('@', idx)
+            if cf_loc == -1:
+                cf_loc = len(line)
+            nearest_char = min(sc_loc, cf_loc)
+            fragment = ChoiceFragment(line[idx:nearest_char])
+            length = nearest_char - idx
+        # logging.info(f'length: {length}')
+        assert length, f'parse_single_fragment is stalled. This should never happen.'
+        return fragment, length
 
     def parse_subchoice_fragment(self, line, idx=0):
         line = line[idx+1:]
@@ -70,8 +80,7 @@ class ChoiceParser():
         length = 1
 
         if line[0] == '[':
-            # Not implemented
-            raise NotImplementedError('Expressions are not yet implemented!')
+            return self.parse_expression(self, line)
         else:
             # Variables and functions can be called "naked" provided the next character is non-word.
             variable_re = re.match(VARIABLE_REGEX, line)
@@ -81,8 +90,7 @@ class ChoiceParser():
 
             if len(line) > name_end and line[name_end] == '(':
                 function_parser = FunctionParser(
-                        self.parse_subchoice_fragment,
-                        self.parse_control_fragment,
+                        self.parse_single_fragment,
                         self.current_file,
                         self.line_num)
                 # WARNING: THIS MODIFIES num_subchoices BY REFERENCE. It's terrible,
@@ -93,7 +101,24 @@ class ChoiceParser():
             else:
                 end_idx = name_end
                 value = line[:end_idx]
+                assert value not in RESERVED_WORDS, f'{self.current_file} line {self.line_num}: {value} is a reserved word, and cannot be used as a variable name.'
                 type = 'VARIABLE'
             # No +1 because it's cancelled out by the -1 to not consume the space.
             length += end_idx
             return ChoiceFragment(value=value, type=type), length
+
+    def parse_expression(self, line):
+        '''
+        Allows: Mathematical expressions, state get/set/modify, order customization, function calls, import calls, subcalls. Yikes.
+        Let's start at the beginning, I guess.
+        '''
+        close_bracket = find_matching_brace('[', ']', 0, line)
+        assert close_bracket != -1, f'{self.current_file} line {self.line_num}: Mismatched expression braces: {line}.'
+
+
+        return ChoiceFragment(value=value, type='EXPRESSION', order=order)
+
+
+
+
+# keep buffer

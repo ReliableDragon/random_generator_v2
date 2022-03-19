@@ -3,15 +3,15 @@ import logging
 
 from function import Function
 from choice_fragment import ChoiceFragment
+from common import find_matching_brace
 from constants import ARGUMENT_RE
 
 logger = logging.getLogger('function_parser')
 
 class FunctionParser():
 
-    def __init__(self, parse_subchoice_fragment, parse_control_fragment, current_file, line_num):
-        self.parse_subchoice_fragment = parse_subchoice_fragment
-        self.parse_control_fragment = parse_control_fragment
+    def __init__(self, parse_single_fragment, current_file, line_num):
+        self.parse_single_fragment = parse_single_fragment
         # self.choice_parser = choice_parser
         self.current_file = current_file
         self.line_num = line_num
@@ -19,26 +19,19 @@ class FunctionParser():
     def parse_function(self, line, num_subchoices):
         logger.info(f'Parsing function string {line}')
         open_paren = line.find('(')
-        close_paren = line.find(')', open_paren)
+        close_paren = find_matching_brace('(', ')', open_paren, line)
         function_name = line[:open_paren]
         assert close_paren != -1, f'{self.current_file} line {self.line_num}: No matching close paren found for function {function_name}.'
         arg_strs = self.parse_args(line, open_paren, close_paren, function_name)
         args = []
 
         for arg_str in arg_strs:
-            fragment_argument = None
-            if arg_str[0] == '$':
-                fragment_argument, _ = self.parse_subchoice_fragment(arg_str)
-                num_subchoices.incr()
-            elif arg_str[0] == '@':
-                fragment_argument, _ = self.parse_control_fragment(arg_str)
-            else:
-                fragment_argument = ChoiceFragment(arg_str)
+            fragment_argument, _ = self.parse_single_fragment(arg_str, 0)
 
             args.append(fragment_argument)
         function = Function(function_name, args)
         error_msg = function.validate()
-        assert not error_msg, error_msg
+        assert not error_msg, f'{self.current_file} line {self.line_num}: {error_msg}'
 
         end_idx = close_paren + 1
         return function, end_idx

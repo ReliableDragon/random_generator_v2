@@ -7,10 +7,11 @@ from choice import Choice
 from choice_fragment import ChoiceFragment
 from choice_parser import ChoiceParser
 from weight_parser import WeightParser
+from import_parser import ImportParser
+from common import skip_comments
 from constants import VARIABLE_REGEX
 
 logger = logging.getLogger('parser')
-
 
 class Parser():
 
@@ -18,7 +19,6 @@ class Parser():
         self.line_num = 1
         self.current_file = None
         self.dir_path = dir_path
-
 
     def parse_file(self, filename):
         self.line_num = 1
@@ -30,7 +30,8 @@ class Parser():
 
         data = self.preprocess_data(data)
         data = self.parse_name(data)
-        imports, data = self.parse_imports(data)
+        import_parser = ImportParser(self.current_file, self.line_num)
+        imports, data, self.line_num = import_parser.parse_imports(data, self.parse_file)
         imports = imports
         blocks = self.parse_blocks(data)
 
@@ -93,46 +94,6 @@ class Parser():
         fragments = choice_parser.parse_choice_data(remainder)
         return Choice(weight, fragments, nesting)
 
-    def parse_imports(self, data):
-        if data[0] == '\n':
-            # logger.info(f'No imports found, short circuiting imports for {self.current_file}.')
-            # No imports, we're currently on the blank line. Consume it and return.
-            return {}, data[1:]
-        # logger.info(f'Data: {data}')
-        import_block_end = data.find('\n\n')
-        # logger.info(f'imports: {data[:import_block_end]}')
-        assert import_block_end != -1, f'{self.current_file} line {self.line_num}: Expected blank line after name and imports.'
-        imports = {}
-        eol = data.find('\n')
-        line = data[:eol]
-        self.line_num += 1
-        while eol <= import_block_end:
-            # logger.info(f'Import: {line}')
-            name, _import = self.parse_import(line)
-            imports[name] = _import
-
-            new_eol = data.find('\n', eol+1)
-            line = data[eol+1:new_eol]
-            eol = new_eol
-            self.line_num += 1
-        # +2 to skip the newlines. Note we're already on the 2nd newline, to be > import_block_end.
-        post_import_data = data[eol+1:]
-        # logger.info(f'Post import data: {post_import_data}')
-        # logger.info(f'Imports: {imports}')
-        return imports, post_import_data
-
-    def parse_import(self, import_line):
-        # logger.info(f'importing: {import_line}')
-        assert ':' in import_line, f'{self.current_file} line {self.line_num}: Import {import_line} does not contain a colon.'
-        name, filename = import_line.split(':')
-        assert re.match(VARIABLE_REGEX, name), f'{self.current_file} line {self.line_num}: Import name {name} does not match pattern of a-zA-Z_.'
-
-        # Save line_num while we recurse.
-        line_num = self.line_num
-        _import = self.parse_file(filename)
-        self.line_num = line_num
-        return name, _import
-
     def parse_name(self, data):
         assert data.find('\n'), f'line {self.line_num}: Expected list name at start of file on its own line.'
         eol = data.find('\n')
@@ -150,9 +111,11 @@ class Parser():
 
     def preprocess_data(self, data):
         lines = data.split('\n')
-        stripped_lines = [l.rstrip(' ') for l in lines]
-        no_trailing_spaces = '\n'.join(stripped_lines)
-        return no_trailing_spaces
+        # Remove trailing whitespace and comments. Yes one-lining is bad practice. It's in a low-touch function though, and it's fun.
+        stripped_lines = [l.rstrip(' ') for l in lines if not (len(l.lstrip(' ')) > 0 and l.lstrip(' ')[0] == ';')]
+        processed_data = '\n'.join(stripped_lines)
+        # logger.info(f'Post processing data: {processed_data}')
+        return processed_data
 
 
 def get_nesting(line):

@@ -13,3 +13,6 @@ class SubchoiceCounter():
 
     def set(self, val):
         self.count = val
+
+    def get(self):
+        return self.count
