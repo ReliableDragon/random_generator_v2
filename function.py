@@ -3,12 +3,15 @@ import logging
 
 logger = logging.getLogger('function')
 
+# TODO: Consider making the args fragments, and having the generator evaluate them,
+# so that we can do fun stuff, e.g., a randomize() function that can randomly order
+# the results of other calls.
 class Function():
 
     def __init__(self, name, args):
         self.name = name.lower()
         # logging.info(f'args: {args}')
-        self.args = [int(arg) for arg in args]
+        self.args = args
 
     def validate(self):
         if self.name == 'gauss':
@@ -20,6 +23,8 @@ class Function():
         elif self.name == 'rand':
             if len(self.args) != 2:
                 return f'rand(start, stop) function requires exactly 2 parameters, but got {len(self.args)}.'
+        elif self.name == 'shuffle':
+            return None
         elif len(self.args) != 1:
             return f'Dynamic function "{self.name}", interpreted as import, requires exactly 1 parameter, but got {len(self.args)}.'
         else:
@@ -29,12 +34,16 @@ class Function():
         x = self.args[0]
         y = self.args[1]
         if self.name == 'gauss':
-            value = random.gauss(x, y)
+            value = int(random.gauss(int(x), int(y)))
         elif self.name == 'gamma':
-            value = random.gammavariate(x, y)
+            value = int(random.gammavariate(int(x), int(y)))
         elif self.name == 'rand':
-            value = random.randint(x, y)
-        return str(int(value))
+            value = int(random.randint(int(x), int(y)))
+        elif self.name == 'shuffle':
+            random.shuffle(self.args)
+            value = self.args
+
+        return value
 
     def __str__(self):
         return f'Function[name: {self.name}, args: {self.args}]'

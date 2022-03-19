@@ -24,3 +24,15 @@ material_type:material_type.txt
   10000 glass display case filled with @misc_items
   
 1 @gauss(1, 10)
+
+1 @shuffle($, $, $, @misc_items) THEN GIVE ME $
+  1 one
+  1 two
+  $
+  1 three
+  1 four
+  $
+  1 five
+  1 six
+  $
+  1 a cat

@@ -48,19 +48,30 @@ class Generator():
     def evaluate_fragment(self, fragment, choice):
         if fragment.type == 'TEXT':
             return fragment.value
+
         if fragment.type == 'SUBCHOICE':
             choice_group = choice.choice_groups[fragment.value]
             return self.pick_choice(choice_group)
+
         if fragment.type == 'VARIABLE':
             variable = fragment.value
             return self.generate_variable(variable)
+
         if fragment.type == 'FUNCTION':
             logger.info(f'Function fragment: {fragment}')
             function = fragment.value
+            function.args = [self.evaluate_fragment(f, choice) for f in function.args]
             if function.name in self.imports:
                 assert len(function.args) == 1, f'Got function call to import "{function.name}", but call did not provide exactly 1 argument.'
                 return self.generate_import(function.name, function.args[0])
-            return function.execute()
+            return str(function.execute())
+
+        if fragment.type == 'EXPRESSION':
+            logger.info(f'Expression fragment: {fragment}')
+            expression = fragment.value
+            value, self.state = expression.evaluate(choice, self.state)
+            return str(value)
+
 
     def generate_variable(self, variable):
         logging.info(f'Evaluating variable {variable}')

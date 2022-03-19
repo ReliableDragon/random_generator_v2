@@ -6,18 +6,13 @@ from root_choice import RootChoice
 from choice import Choice
 from choice_fragment import ChoiceFragment
 from choice_parser import ChoiceParser
-from constants import VARIABLE_REGEX, FUNCTION_REGEX
+from weight_parser import WeightParser
+from constants import VARIABLE_REGEX
 
 logger = logging.getLogger('parser')
 
 
 class Parser():
-
-    VARIABLE_REGEX = r'([a-zA-Z]\w*)'
-    NUMBER_RE = r'(\d+(?:\.\d+)?)'
-    ARGUMENT_RE = fr'({NUMBER_RE}|{VARIABLE_REGEX})'
-    ARGUMENT_WITH_COMMA_RE = fr'({ARGUMENT_RE}, *)'
-    FUNCTION_REGEX = fr'({VARIABLE_REGEX}\({ARGUMENT_WITH_COMMA_RE}*{ARGUMENT_RE}?\))'
 
     def __init__(self, dir_path):
         self.line_num = 1
@@ -92,8 +87,9 @@ class Parser():
 
     def parse_choice(self, line, nesting):
         # logger.info(f'Line: {line}')
+        weight_parser = WeightParser(self.current_file, self.line_num)
+        weight, weight_type, remainder = weight_parser.parse_weight(line)
         choice_parser = ChoiceParser(self.current_file, self.line_num)
-        weight, weight_type, remainder = choice_parser.parse_weight(line)
         fragments = choice_parser.parse_choice_data(remainder)
         return Choice(weight, fragments, nesting)
 
@@ -129,7 +125,7 @@ class Parser():
         # logger.info(f'importing: {import_line}')
         assert ':' in import_line, f'{self.current_file} line {self.line_num}: Import {import_line} does not contain a colon.'
         name, filename = import_line.split(':')
-        assert re.match(self.VARIABLE_REGEX, name), f'{self.current_file} line {self.line_num}: Import name {name} does not match pattern of a-zA-Z_.'
+        assert re.match(VARIABLE_REGEX, name), f'{self.current_file} line {self.line_num}: Import name {name} does not match pattern of a-zA-Z_.'
 
         # Save line_num while we recurse.
         line_num = self.line_num
