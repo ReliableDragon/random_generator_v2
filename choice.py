@@ -2,12 +2,11 @@ from choice_group import ChoiceGroup
 
 class Choice():
 
-    def __init__(self, weight, sections, level, is_simple):
+    def __init__(self, weight, fragments, level):
         self.weight = weight
-        self.sections = sections
+        self.fragments = fragments
         self.nesting = level
         self.level = level
-        self.is_simple = is_simple
         self.choice_groups = []
 
     def add_choice(self, choice):
@@ -26,11 +25,11 @@ class Choice():
         if self.choice_groups:
             self.choice_groups[-1].set_nesting(nesting)
 
-    def make_str(self, indent=0):
-        s = f'\n{" " * (2 * self.level)}SC[weight: {self.weight}, sections: {"$".join(self.sections)}, level: {self.level}, nesting: {self.nesting}]\n'
-        s += f'{" " * (2 * indent)}{self.weight}: {"$".join(self.sections)}'
+    def make_str(self):
+        s = f'\n{" " * (2 * self.level)}SC[weight: {self.weight}, fragments: {"".join(str(self.fragments))}, level: {self.level}, nesting: {self.nesting}]\n'
+        s += f'{" " * (2 * self.level)}{self.weight}: {"".join([str(f.value) for f in self.fragments])}'
         for i, choice_group in enumerate(self.choice_groups):
-            s += choice_group.make_str(indent)
+            s += choice_group.make_str()
             if i != len(self.choice_groups) - 1:
                 s += '\n$'
         return s

@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger('choice_group')
+
 
 class ChoiceGroup():
 
@@ -7,7 +11,7 @@ class ChoiceGroup():
         self.nesting = nesting
 
     def add_choice(self, choice):
-        # print(f'Nesting: {self.nesting}, Level: {self.level}')
+        # logger.info(f'Nesting: {self.nesting}, Level: {self.level}')
         if self.nesting == self.level + 1:
             self.choices.append(choice)
         else:
@@ -20,10 +24,10 @@ class ChoiceGroup():
         self.nesting = nesting
         self.choices[-1].set_nesting(nesting)
 
-    def make_str(self, indent=0):
+    def make_str(self):
         s = f'\n{" " * (2 * self.level)}CG[level: {self.level}, nesting: {self.nesting}]'
         for choice in self.choices:
-            s += '\n' + choice.make_str(indent+1)
+            s += '\n' + choice.make_str()
         return s
 
     def __str__(self):

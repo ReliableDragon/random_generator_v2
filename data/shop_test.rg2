@@ -1,5 +1,6 @@
 shop_interiors
 misc_items:misc_items.txt
+material_type:material_type.txt
 
 1 is filled with $
   10 cats
@@ -11,7 +12,7 @@ misc_items:misc_items.txt
     10 scattered
     10 unsettling
     $
-    20 various animals
+    20000 various @material_type animals
     10 soldiers
     10 mythological figures
     5 a single person
@@ -20,4 +21,6 @@ misc_items:misc_items.txt
   10 small fountain
   10 lamppost
   10 group of mannequins
-  5000 glass display case filled with @misc_items
+  10000 glass display case filled with @misc_items
+  
+1 @gauss(1, 10)
