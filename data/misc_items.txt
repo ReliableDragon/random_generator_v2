@@ -1,0 +1,146 @@
+misc_items
+material_type:material_type.txt
+
+10 $
+  1 whiskey
+  1 gin
+  1 rum
+  1 wine
+  1 fine wine
+3 bear trap
+5 $
+  1 sheet
+  1 mattress
+  1 pillow
+  1 bedframe
+  1 blanket
+5 belt buckle
+2 $
+  10 holy book
+  3 novel
+  2 book of history
+  10 bureaucratic tome
+  5 poetry book
+  1 book of gnostic mysteries
+10 glass bottle filled with $
+  10 nothing
+  1 holy water
+  3 unidentified potion
+  1 healing potion
+  7 obvious poison
+  4 mysterious alchemic liquid
+5 brush
+7 bunch of candles
+5 bust of a $
+  1 king
+  1 founder
+  1 famous general
+  1 religious figure
+5 @material_type chest
+2 clock
+10 cloth
+5 @material_type $
+  1 pot
+  1 pan
+1 crystal ball
+10 a set of @material_type cups
+10000 a $dagger
+  400
+  1 bloodstained
+1 a diary
+10 a set of @material_type dinner plates
+5 doll
+7 flask
+10 $
+  10 chair
+  10 table
+  10 bench
+  3 desk
+  5 end table
+  5 couch
+  1 chandelier
+  10 shelves
+  10 cupboard
+  1 bookcase
+1 a $
+  10 sapphire
+  7 emerald
+  5 ruby
+  1 diamond
+  8 topaz
+  3 opal
+5 heirloom $
+  1 sword
+  1 spear
+  1 bow
+  1 crossbow
+5 ink
+10 knapsack
+10 lamp
+5 lantern
+5 $
+  1 rabbit’s foot
+  1 horseshoe
+  1 silver cat talisman
+  1 vial full of ladybugs
+  1 garlic wreath
+2 mirror
+3 model ship
+5 a(n) $
+  1 guitar
+  1 lute
+  1 flute
+  1 accordion
+  1 piano
+  1 violin
+  1 drum
+  1 pipes
+4 painting of a(n) $
+  1 sunset
+  1 beach
+  1 waterfall
+  1 castle
+  1 river valley
+  1 pastoral landscape
+  1 ship at sea
+10 paper
+7 paperweight in the form of a $
+  1 man
+  1 ship
+  1 castle
+  1 dragon
+3 elixirs of $
+  1 fireproofing
+  1 glue
+  1 cooling
+  1 light
+  1 fumigation
+5 purse
+3 shaving razor
+7 @material_type ring
+3 rope
+7 rug
+3 $ scroll
+  3 magic missile
+  5 sending
+  10 prestidigitation
+  10 light
+5 sewing needle
+10 a set of silverware
+1 a snowglobe
+5 statuette
+1 spyglass
+5 thread
+6 tinderbox
+10 $
+  1 saw
+  1 hammer
+  1 chisel
+  1 sledgehammer
+  1 axe
+5 toy soldiers
+1 wand of $
+  1 light
+  1 prestidigitation
+2 watch
+2 wig
