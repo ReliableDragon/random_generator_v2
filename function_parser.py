@@ -33,8 +33,8 @@ class FunctionParser():
         error_msg = function.validate()
         assert not error_msg, f'{self.current_file} line {self.line_num}: {error_msg}'
 
-        end_idx = close_paren + 1
-        return function, end_idx
+        next_idx = close_paren + 1
+        return function, next_idx
 
     def parse_args(self, line, open_paren, close_paren, function_name):
         arguments_str = line[open_paren+1:close_paren]

@@ -30,7 +30,7 @@ class Function():
         else:
             return None
 
-    def execute(self):
+    def execute(self, imports, generate_import):
         x = self.args[0]
         y = self.args[1]
         if self.name == 'gauss':
@@ -42,6 +42,13 @@ class Function():
         elif self.name == 'shuffle':
             random.shuffle(self.args)
             value = self.args
+        elif function.name in self.imports:
+            assert len(function.args) == 1, f'Got function call to import "{function.name}", but call did not provide exactly 1 argument.'
+            value = generate_import(function.name, function.args[0])
+        else:
+            logger.warning(f'Function {function.name} ran, but didn\'t align with any existing function or import!')
+            value = ""
+
 
         return value
 

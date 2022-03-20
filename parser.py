@@ -112,7 +112,7 @@ class Parser():
     def preprocess_data(self, data):
         lines = data.split('\n')
         # Remove trailing whitespace and comments. Yes one-lining is bad practice. It's in a low-touch function though, and it's fun.
-        stripped_lines = [l.rstrip(' ') for l in lines if not (len(l.lstrip(' ')) > 0 and l.lstrip(' ')[0] == ';')]
+        stripped_lines = [l.rstrip(' ') for l in lines if not (len(l.lstrip(' ')) > 1 and l.lstrip(' ')[:2] == '//')]
         processed_data = '\n'.join(stripped_lines)
         # logger.info(f'Post processing data: {processed_data}')
         return processed_data

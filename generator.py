@@ -65,10 +65,10 @@ class Generator():
             logger.info(f'Function fragment: {fragment}')
             function = fragment.value
             function.args = [self.evaluate_fragment(f, choice) for f in function.args]
-            if function.name in self.imports:
-                assert len(function.args) == 1, f'Got function call to import "{function.name}", but call did not provide exactly 1 argument.'
-                return self.generate_import(function.name, function.args[0])
-            return str(function.execute())
+            # if function.name in self.imports:
+            #     assert len(function.args) == 1, f'Got function call to import "{function.name}", but call did not provide exactly 1 argument.'
+            #     return self.generate_import(function.name, function.args[0])
+            return str(function.execute(self.imports, self.generate_import))
 
         if fragment.type == 'EXPRESSION':
             logger.info(f'Expression fragment: {fragment}')
