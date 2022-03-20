@@ -16,7 +16,7 @@ class ChoiceParser():
         self.current_file = current_file
         self.line_num = line_num
         self.num_subchoices = SubchoiceCounter()
-    # assert weight_type != "INVALID", f'{self.current_file} line {self.line_num}: Choice "{line}" must begin with a valid weight!'
+
     def parse_choice_data(self, line):
         fragments = []
         idx = 0
