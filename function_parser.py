@@ -17,7 +17,7 @@ class FunctionParser():
         self.line_num = line_num
 
     def parse_function(self, line, num_subchoices):
-        logger.info(f'Parsing function string {line}')
+        # logger.info(f'Parsing function string {line}')
         open_paren = line.find('(')
         close_paren = find_matching_brace('(', ')', open_paren, line)
         function_name = line[:open_paren]
@@ -33,8 +33,8 @@ class FunctionParser():
         error_msg = function.validate()
         assert not error_msg, f'{self.current_file} line {self.line_num}: {error_msg}'
 
-        next_idx = close_paren + 1
-        return function, next_idx
+        length = close_paren + 1
+        return function, length
 
     def parse_args(self, line, open_paren, close_paren, function_name):
         arguments_str = line[open_paren+1:close_paren]

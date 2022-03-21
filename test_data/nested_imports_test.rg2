@@ -1,0 +1,5 @@
+nested_imports_test
+nested_import:nested_import.rg2
+
+10 one @nested_import
+10 two @nested_import

@@ -1,0 +1,4 @@
+nested_import
+simple_import:simple_import.rg2
+
+10 nest @simple_import

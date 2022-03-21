@@ -1,0 +1,16 @@
+([
+Choice Block:
+Choice[weight: 10, fragments: [ChoiceFragment[value: "one ", type: TEXT, order: NONE], ChoiceFragment[value: "simple_import", type: VARIABLE, order: NONE]], level: 0, nesting: 0]
+10: one simple_import
+
+Choice[weight: 10, fragments: [ChoiceFragment[value: "two ", type: TEXT, order: NONE], ChoiceFragment[value: "simple_import", type: VARIABLE, order: NONE]], level: 0, nesting: 0]
+10: two simple_import
+], {'simple_import': ([
+Choice Block:
+Choice[weight: 1, fragments: [ChoiceFragment[value: "dogs", type: TEXT, order: NONE]], level: 0, nesting: 0]
+1: dogs
+, 
+Choice Block:
+Choice[weight: 1, fragments: [ChoiceFragment[value: "cats", type: TEXT, order: NONE]], level: 0, nesting: 0]
+1: cats
+], {})})

@@ -1,17 +1,12 @@
-//test
 shop_interiors
-//test2
 misc_items:misc_items.txt
-//and test 3
 material_type:material_type.txt
-//even another test here!
 
 1 is filled with $
   10 cats
   10 plants
   3 lizards
   5 fog
-  // and what's this? yet another test?
   10000 $ statues of $
     10 small
     10 scattered
@@ -42,4 +37,4 @@ material_type:material_type.txt
   $
   1 a cat
   
-  1 @[2][1+1*5] @[#wealth=100; "I have #wealth wealth."]
+1 @[2][1+1*5] @[#wealth=100; "I have #wealth wealth."]

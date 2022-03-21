@@ -1,11 +1,8 @@
 from choice_fragment import ChoiceFragment
+from constants import VALID_EQUATION_OPS as VALID_OPS
 
 class Equation():
 
-    # In case I forget again, parens don't show up here, they're only relevant
-    # while you're constructing the Equation tree.
-    # TODO: Add functions as well as variables.
-    VALID_OPS = ['+', '-', '*', '**', '/', '//', '==', '!=', '>', '<', '>=', '<=', '!', '^', None]
     UNARY_FNS = {
         '+': int,
         '-': lambda a: a * -1,
@@ -24,6 +21,7 @@ class Equation():
         '<': lambda a, b: a < b,
         '>=': lambda a, b: a >= b,
         '<=': lambda a, b: a <= b,
+        '?': lambda a, b: b if a else '',
     }
 
 
@@ -52,7 +50,7 @@ class Equation():
         if not lhs and not rhs and not op:
             return f'All values are empty!'
 
-        if op not in self.VALID_OPS:
+        if op not in VALID_OPS:
             return f'{op} is not a valid operation in an Equation.'
         if rhs not in self.VALID_VALUES:
             return f'{rhs} is not a valid value in an Equation.'
@@ -109,7 +107,7 @@ class Equation():
             return self.BINARY_FNS[op](lhs, rhs)
 
     def __str__(self):
-        return '(' + str(self.lhs) + str(self.op) + str(self.rhs) + ')'
+        return f'Equation[lhs: {str(self.lhs)}, op={str(self.op)}, rhs={str(self.rhs)}]'
 
     def __repr__(self):
         return self.__str__()

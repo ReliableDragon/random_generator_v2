@@ -1,0 +1,5 @@
+([
+Choice Block:
+Choice[weight: 1, fragments: [ChoiceFragment[value: "Function[name: gauss, args: [ChoiceFragment[value: "1", type: TEXT, order: NONE], ChoiceFragment[value: "10", type: TEXT, order: NONE]]]", type: FUNCTION, order: NONE]], level: 0, nesting: 0]
+1: Function[name: gauss, args: [ChoiceFragment[value: "1", type: TEXT, order: NONE], ChoiceFragment[value: "10", type: TEXT, order: NONE]]]
+], {})

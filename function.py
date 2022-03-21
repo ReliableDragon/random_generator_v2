@@ -25,29 +25,45 @@ class Function():
                 return f'rand(start, stop) function requires exactly 2 parameters, but got {len(self.args)}.'
         elif self.name == 'shuffle':
             return None
+        elif self.name == '$':
+            if len(self.args) not in [1, 2]:
+                return f'$(choice_group, repetition?) function requires 1 or 2 parameter, but got {len(self.args)}.'
         elif len(self.args) != 1:
             return f'Dynamic function "{self.name}", interpreted as import, requires exactly 1 parameter, but got {len(self.args)}.'
         else:
             return None
 
-    def execute(self, imports, generate_import):
-        x = self.args[0]
-        y = self.args[1]
-        if self.name == 'gauss':
-            value = int(random.gauss(int(x), int(y)))
-        elif self.name == 'gamma':
-            value = int(random.gammavariate(int(x), int(y)))
-        elif self.name == 'rand':
-            value = int(random.randint(int(x), int(y)))
+    def execute(self, imports, state, random_generator, generate_import, choice_groups, pick_choice):
+        if name in ['gauss', 'gamma', 'rand']:
+            x = self.args[0]
+            y = self.args[1]
+            if self.name == 'gauss':
+                value = int(random_generator.gauss(int(x), int(y)))
+            elif self.name == 'gamma':
+                value = int(random_generator.gammavariate(int(x), int(y)))
+            elif self.name == 'rand':
+                value = int(random_generator.randint(int(x), int(y)))
         elif self.name == 'shuffle':
-            random.shuffle(self.args)
+            random_generator.shuffle(self.args)
             value = self.args
+        elif self.name == '$':
+            cg_index = self.args[0]
+            repetition = self.args[1]
+            value = []
+            for _ in int(self.args[0]):
+                value.append(pick_choice(choice_group))
         elif function.name in self.imports:
             assert len(function.args) == 1, f'Got function call to import "{function.name}", but call did not provide exactly 1 argument.'
             value = generate_import(function.name, function.args[0])
+        elif function.name in self.state:
+            assert len(function.args) == 1, f'Got function call to reference state "{function.name}", but call did not provide exactly 1 argument.'
+            try:
+                value = state[function.name][function.args[0]]
+            except IndexError:
+                value = ''
         else:
             logger.warning(f'Function {function.name} ran, but didn\'t align with any existing function or import!')
-            value = ""
+            value = ''
 
 
         return value

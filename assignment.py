@@ -3,19 +3,19 @@ import re
 from choice_fragment import ChoiceFragment
 from equation import Equation
 from constants import VARIABLE_REGEX, RESERVED_WORDS
+from constants import VALID_ASSIGNMENT_OPS as VALID_OPS
 
 class Assignment():
 
     VALID_LHS_RE = VARIABLE_REGEX
-    VALIP_OPS = ['=', '+=', '-=', '*=', '**=', '/=', '//=']
     ASSIGNMENT_FNS = {
         '=': lambda a, b: b,
-        '+=' lambda a, b: a + b,
-        '-=' lambda a, b: a - b,
-        '*=' lambda a, b: a * b,
-        '**=' lambda a, b: a ** b,
-        '/=' lambda a, b: a / b,
-        '//=' lambda a, b: a // b,
+        '+=': lambda a, b: a + b,
+        '-=': lambda a, b: a - b,
+        '*=': lambda a, b: a * b,
+        '**=': lambda a, b: a ** b,
+        '/=': lambda a, b: a / b,
+        '//=': lambda a, b: a // b,
     }
 
     def __init__(self, lhs, op, rhs):
@@ -28,6 +28,8 @@ class Assignment():
         rhs = self.rhs
         op = self.op
 
+        if op not in VALID_OPS:
+            return f'{op} is not a valid operation in an Assignment.'
         if not lhs or not rhs or not op:
             return f'Assignment with lhs={lhs}, rhs={rhs}, and op={op} is invalid. All three must be provided and non-None.'
         if not re.match(VARIABLE_REGEX, lhs):

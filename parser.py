@@ -9,6 +9,7 @@ from choice_parser import ChoiceParser
 from weight_parser import WeightParser
 from import_parser import ImportParser
 from common import skip_comments
+from parse_error import ParseError
 from constants import VARIABLE_REGEX
 
 logger = logging.getLogger('parser')
@@ -22,23 +23,28 @@ class Parser():
 
     def parse_file(self, filename):
         self.line_num = 1
-        old_file = self.current_file
         self.current_file = filename
         filepath = os.path.join(self.dir_path, filename)
         file = open(filepath)
         data = file.read()
+        file.close()
 
         data = self.preprocess_data(data)
         data = self.parse_name(data)
         import_parser = ImportParser(self.current_file, self.line_num)
+
+        # Parsing imports can mess with these, so we save and restore them. A
+        # bit hacky, there's definitely cleaner ways to do this. *coughstackcough*
+        curr_file = self.current_file
         imports, data, self.line_num = import_parser.parse_imports(data, self.parse_file)
+        self.current_file = curr_file
+
         imports = imports
         blocks = self.parse_blocks(data)
 
         choice_blocks = []
         for block in blocks:
             choice_blocks.append(self.parse_choice_block(block))
-        self.current_file = old_file
         # logger.info(f'Choice Blocks: {choice_blocks}')
         # logger.info(f'Parsed imports: {imports}')
         return choice_blocks, imports
@@ -51,12 +57,16 @@ class Parser():
         if eol == -1:
             eol = len(block)
 
+        line = block[idx:eol]
+        if get_nesting(line) > 0:
+            raise ParseError(f'{self.current_file} line {self.line_num} ("{line}"): Start of new choice block cannot be indented!.')
+
         # logger.info(f'eol: {eol}')
         # Use <= bc ending nl is optional
         while idx <= len(block):
             # logger.info(f'idx: {idx}')
             line = block[idx:eol]
-            # logger.info(f'line: "{line}"')
+            # logger.info(f'Parsing line: "{line}"')
             self.line_num += 1
 
             nesting = get_nesting(line)

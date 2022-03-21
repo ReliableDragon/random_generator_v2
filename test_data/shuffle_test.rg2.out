@@ -1,0 +1,33 @@
+([
+Choice Block:
+Choice[weight: 1, fragments: [ChoiceFragment[value: "Function[name: shuffle, args: [ChoiceFragment[value: "0", type: SUBCHOICE, order: NONE], ChoiceFragment[value: "1", type: SUBCHOICE, order: NONE], ChoiceFragment[value: "2", type: SUBCHOICE, order: NONE], ChoiceFragment[value: "misc_items", type: VARIABLE, order: NONE]]]", type: FUNCTION, order: NONE], ChoiceFragment[value: " THEN GIVE ME ", type: TEXT, order: NONE], ChoiceFragment[value: "3", type: SUBCHOICE, order: NONE]], level: 0, nesting: 1]
+1: Function[name: shuffle, args: [ChoiceFragment[value: "0", type: SUBCHOICE, order: NONE], ChoiceFragment[value: "1", type: SUBCHOICE, order: NONE], ChoiceFragment[value: "2", type: SUBCHOICE, order: NONE], ChoiceFragment[value: "misc_items", type: VARIABLE, order: NONE]]] THEN GIVE ME 3
+CG[level: 0, nesting: 1]
+
+  Choice[weight: 1, fragments: [ChoiceFragment[value: "one", type: TEXT, order: NONE]], level: 1, nesting: 1]
+  1: one
+
+  Choice[weight: 1, fragments: [ChoiceFragment[value: "two", type: TEXT, order: NONE]], level: 1, nesting: 1]
+  1: two
+$
+CG[level: 0, nesting: 1]
+
+  Choice[weight: 1, fragments: [ChoiceFragment[value: "three", type: TEXT, order: NONE]], level: 1, nesting: 1]
+  1: three
+
+  Choice[weight: 1, fragments: [ChoiceFragment[value: "four", type: TEXT, order: NONE]], level: 1, nesting: 1]
+  1: four
+$
+CG[level: 0, nesting: 1]
+
+  Choice[weight: 1, fragments: [ChoiceFragment[value: "five", type: TEXT, order: NONE]], level: 1, nesting: 1]
+  1: five
+
+  Choice[weight: 1, fragments: [ChoiceFragment[value: "six", type: TEXT, order: NONE]], level: 1, nesting: 1]
+  1: six
+$
+CG[level: 0, nesting: 1]
+
+  Choice[weight: 1, fragments: [ChoiceFragment[value: "a cat", type: TEXT, order: NONE]], level: 1, nesting: 1]
+  1: a cat
+], {})

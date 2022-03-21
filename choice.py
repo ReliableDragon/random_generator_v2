@@ -26,7 +26,7 @@ class Choice():
             self.choice_groups[-1].set_nesting(nesting)
 
     def make_str(self):
-        s = f'\n{" " * (2 * self.level)}SC[weight: {self.weight}, fragments: {"".join(str(self.fragments))}, level: {self.level}, nesting: {self.nesting}]\n'
+        s = f'\n{" " * (2 * self.level)}Choice[weight: {self.weight}, fragments: {"".join(str(self.fragments))}, level: {self.level}, nesting: {self.nesting}]\n'
         s += f'{" " * (2 * self.level)}{self.weight}: {"".join([str(f.value) for f in self.fragments])}'
         for i, choice_group in enumerate(self.choice_groups):
             s += choice_group.make_str()

@@ -9,10 +9,11 @@ logger = logging.getLogger('generator')
 
 class Generator():
 
-    def __init__(self, choice_blocks, imports):
+    def __init__(self, choice_blocks, imports, random_generator):
         self.choice_blocks = choice_blocks
         self.imports = imports
         self.state = {}
+        self.random_generator = random_generator
 
     def generate(self):
         results = []
@@ -68,7 +69,7 @@ class Generator():
             # if function.name in self.imports:
             #     assert len(function.args) == 1, f'Got function call to import "{function.name}", but call did not provide exactly 1 argument.'
             #     return self.generate_import(function.name, function.args[0])
-            return str(function.execute(self.imports, self.generate_import))
+            return str(function.execute(self.imports, self.state, self.random_generator self.generate_import, self.choice_groups, self.pick_choice))
 
         if fragment.type == 'EXPRESSION':
             logger.info(f'Expression fragment: {fragment}')
@@ -98,14 +99,18 @@ class Generator():
             logging.warning(f'Generated empty results for import variable "{variable}"! Are you sure this is what you wanted?')
             result = ''
         else:
-            result = results[position]
+            try:
+                result = results[position]
+            except IndexError:
+                logging.warning(f'Accessed invalid index for import variable "{variable}"! Are you sure this is what you wanted?')
+                result = ''
         return result
 
     def pick_choice(self, choice_group):
         # logger.info(f'Choice Group: {choice_group}')
         # logger.info(choice_group)
         total = sum([c.weight for c in choice_group.choices])
-        rand = random.randint(1, total)
+        rand = self.random_generator.randint(1, total)
         # logger.info(f'total: {total}, rand: {rand}')
         i = -1
         _sum = 0

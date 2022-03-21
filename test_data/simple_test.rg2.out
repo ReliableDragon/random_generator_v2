@@ -1,0 +1,5 @@
+([
+Choice Block:
+Choice[weight: 1, fragments: [ChoiceFragment[value: "test", type: TEXT, order: NONE]], level: 0, nesting: 0]
+1: test
+], {})
