@@ -2,6 +2,8 @@ import random
 import math
 import logging
 
+from equation import Equation
+
 from heapq import heappush, heappop
 from itertools import zip_longest
 
@@ -9,21 +11,22 @@ logger = logging.getLogger('generator')
 
 class Generator():
 
-    def __init__(self, choice_blocks, imports, random_generator):
+    def __init__(self, choice_blocks, imports):
         self.choice_blocks = choice_blocks
         self.imports = imports
         self.state = {}
-        self.random_generator = random_generator
+        # self.random_generator = random_generator
 
     def generate(self):
         results = []
         # logging.info(f'Imports: {self.imports}')
+        self.state = {}
         for root_choice in self.choice_blocks:
             logger.info(f'Root choice: {root_choice}')
+            curryed_evaluate_fragment = lambda a: self.evaluate_fragment(a, root_choice)
             # Have to do the first roll out here, because technically the root choices are equivalent to choice blocks,
             # since there's no line to use as a choice.
-            self.state = {}
-            choice = self.pick_choice(root_choice)
+            choice = self.pick_choice(root_choice, curryed_evaluate_fragment)
             # TODO: Consider if having persistent state for whole file would be worthwhile.
             results.append(choice)
         # logging.info(f'Results: {results}')
@@ -34,12 +37,14 @@ class Generator():
         values = []
         choice_groups = choice.choice_groups
         logging.info(f'Unordered fragments: {choice.fragments}')
+
         for i, fragment in enumerate(choice.fragments):
             order = fragment.order
             if order == 'NONE':
                 order = math.inf
             heappush(ordered_fragments, (order, i, fragment))
         logging.info(f'Ordered fragments: {ordered_fragments}')
+
         for _, i, fragment in ordered_fragments:
             value = self.evaluate_fragment(fragment, choice)
             heappush(values, (i, value))
@@ -51,12 +56,13 @@ class Generator():
 
     def evaluate_fragment(self, fragment, choice):
         logging.info(f'Fragment: {fragment}')
+        curryed_evaluate_fragment = lambda a: self.evaluate_fragment(a, choice)
         if fragment.type == 'TEXT':
             return fragment.value
 
         if fragment.type == 'SUBCHOICE':
             choice_group = choice.choice_groups[fragment.value]
-            return self.pick_choice(choice_group)
+            return self.pick_choice(choice_group, curryed_evaluate_fragment)
 
         if fragment.type == 'VARIABLE':
             variable = fragment.value
@@ -65,17 +71,33 @@ class Generator():
         if fragment.type == 'FUNCTION':
             logger.info(f'Function fragment: {fragment}')
             function = fragment.value
-            function.args = [self.evaluate_fragment(f, choice) for f in function.args]
+            function.args = [curryed_evaluate_fragment(f) for f in function.args]
+            logger.info(f'Function post-arg-evaluation: {function}')
             # if function.name in self.imports:
             #     assert len(function.args) == 1, f'Got function call to import "{function.name}", but call did not provide exactly 1 argument.'
             #     return self.generate_import(function.name, function.args[0])
-            return str(function.execute(self.imports, self.state, self.random_generator self.generate_import, self.choice_groups, self.pick_choice))
+            return str(function.execute(self.imports, self.state, self.generate_import, choice.choice_groups, curryed_evaluate_fragment, self.pick_choice))
 
         if fragment.type == 'EXPRESSION':
             logger.info(f'Expression fragment: {fragment}')
             expression = fragment.value
-            value, self.state = expression.evaluate(choice, self.state)
+            logger.info(f'Expression: {expression}')
+            value = expression.evaluate(curryed_evaluate_fragment)
             return str(value)
+
+        if fragment.type == 'EQUATION':
+            logger.info(f'Expression fragment: {fragment}')
+            expression = fragment.value
+            logger.info(f'Expression: {expression}')
+            value = expression.evaluate(curryed_evaluate_fragment)
+            return str(value)
+
+        if fragment.type == 'ASSIGNMENT':
+            logger.info(f'Expression fragment: {fragment}')
+            expression = fragment.value
+            logger.info(f'Expression: {expression}')
+            self.state = expression.evaluate(self.state, curryed_evaluate_fragment)
+            return ''
 
 
     def generate_variable(self, variable):
@@ -106,11 +128,25 @@ class Generator():
                 result = ''
         return result
 
-    def pick_choice(self, choice_group):
+    def pick_choice(self, choice_group, evaluate_fragment):
         # logger.info(f'Choice Group: {choice_group}')
         # logger.info(choice_group)
-        total = sum([c.weight for c in choice_group.choices])
-        rand = self.random_generator.randint(1, total)
+        logger.info(f'Weights: {[c.weight for c in choice_group.choices]}')
+        evaluated_weights = []
+        for choice in choice_group.choices:
+            weight = choice.weight
+            if type(weight) == Equation:
+                evaluated_weight = weight.evaluate(evaluate_fragment)
+                try:
+                    weight = int(evaluated_weight)
+                except ValueError:
+                    logger.fatal(f'Choice {weight} in choice_group {choice_group} evaluated to {evaluated_weight}, which could not be converted to an integer weight.')
+                    raise
+            evaluated_weights.append(weight)
+        logger.info(f'Evaluated weights: {evaluated_weights}')
+
+        total = sum(evaluated_weights)
+        rand = random.randint(1, total)
         # logger.info(f'total: {total}, rand: {rand}')
         i = -1
         _sum = 0
@@ -118,7 +154,9 @@ class Generator():
         while _sum < rand:
             i += 1
             # logger.info(f'i: {i}, sum: {_sum}, choice weight: {choice_group.choices[i].weight}')
-            _sum += choice_group.choices[i].weight
+            # These are in sync with choice_group.choices, as we don't want to override
+            # those, in case we evaluate this choice group multiple times.
+            _sum += evaluated_weights[i]
         chosen = choice_group.choices[i]
         # logger.info(chosen)
         return self.generate_choice(chosen)

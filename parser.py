@@ -31,6 +31,7 @@ class Parser():
 
         data = self.preprocess_data(data)
         data = self.parse_name(data)
+        self.line_num += 1
         import_parser = ImportParser(self.current_file, self.line_num)
 
         # Parsing imports can mess with these, so we save and restore them. A
@@ -98,9 +99,16 @@ class Parser():
 
     def parse_choice(self, line, nesting):
         # logger.info(f'Line: {line}')
-        weight_parser = WeightParser(self.current_file, self.line_num)
-        weight, weight_type, remainder = weight_parser.parse_weight(line)
         choice_parser = ChoiceParser(self.current_file, self.line_num)
+        # Ugly ugly ugly. There's gotta be a cleaner way to do this. Maybe register
+        # all parsing functions at the top level here and then pass them around together?
+        weight_parser = WeightParser(
+                choice_parser.parse_single_fragment,
+                choice_parser.num_subchoices,
+                self.current_file,
+                self.line_num)
+        weight, weight_type, remainder = weight_parser.parse_weight(line)
+        logger.info(f'Remainder: {remainder}')
         fragments = choice_parser.parse_choice_data(remainder)
         return Choice(weight, fragments, nesting)
 

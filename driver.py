@@ -22,7 +22,7 @@ def run():
     parser = Parser(dir_path)
     choice_blocks, imports = parser.parse_file(filename)
 
-    generator = Generator(choice_blocks, imports, RandomGenerator())
+    generator = Generator(choice_blocks, imports)
     generation = generator.generate()
     print('\nResults:')
     for i, g in enumerate(generation):

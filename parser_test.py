@@ -16,6 +16,16 @@ class ParserTest(unittest.TestCase):
         result, expected = process_file(filename)
         self.assertEqual(result, expected)
 
+    def test_equation_multigen_nested(self):
+        filename = r'test_data\equation_multigen_nested_test.rg2'
+        result, expected = process_file(filename)
+        self.assertEqual(result, expected)
+
+    def test_equation_weight(self):
+        filename = r'test_data\equation_weight_test.rg2'
+        result, expected = process_file(filename)
+        self.assertEqual(result, expected)
+
     def test_function(self):
         filename = r'test_data\function_test.rg2'
         result, expected = process_file(filename)
@@ -76,34 +86,6 @@ class ParserTest(unittest.TestCase):
         result, expected = process_file(filename)
         self.assertEqual(result, expected)
 
-    # def test_hackyhackyhack(self):
-    #     filename = r'test_data\simple_test.rg2'
-    #     curr_path = os.getcwd()
-    #     filepath = os.path.join(curr_path, filename)
-    #     dir_path = os.path.dirname(filepath)
-    #     print(f'dir_path: {dir_path}')
-    #     for f in os.listdir(dir_path):
-    #         filepath = os.path.join(dir_path, f)
-    #         print(f'Processing file {f}')
-    #         if os.path.isfile(filepath) and filepath[-4:] != '.out':
-    #             filename = os.path.basename(filepath)
-    #             tested = Parser(dir_path)
-    #
-    #             result = str(tested.parse_file(filename))
-    #             out_filename = filename + '.out'
-    #             f = open(os.path.join(dir_path, out_filename), mode='w')
-    #             f.write(result)
-    #             f.close()
-    #
-    #     self.assertEqual(
-    #         str(tested.parse_file(filename)),
-    #         '''
-    #         ''')
-
-    # def test_simple(self):
-    #     filename = r'test_data\simple_test.rg2'
-    #     process_file(filename)
-
 def process_file(filename, override_file = False):
     curr_path = os.getcwd()
     filepath = os.path.join(curr_path, filename)
@@ -112,16 +94,15 @@ def process_file(filename, override_file = False):
     tested = Parser(dir_path)
 
     result = str(tested.parse_file(filename))
-    out_filename = filename + '.out'
-    f = open(os.path.join(dir_path, out_filename))
-    expected = f.read()
-    f.close()
-
-    result = str(tested.parse_file(filename))
     if override_file:
         out_filename = filename + '.out'
         f = open(os.path.join(dir_path, out_filename), mode='w')
         f.write(result)
         f.close()
+
+    out_filename = filename + '.out'
+    f = open(os.path.join(dir_path, out_filename))
+    expected = f.read()
+    f.close()
 
     return result, expected

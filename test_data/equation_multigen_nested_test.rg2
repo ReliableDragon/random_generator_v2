@@ -1,0 +1,3 @@
+equation_multigen_nested
+
+1 @[$(#gauss(1, 10))]

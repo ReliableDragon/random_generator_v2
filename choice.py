@@ -35,7 +35,7 @@ class Choice():
         return s
 
     def __str__(self):
-        return self.make_str(0)
+        return self.make_str()
 
     def __repr__(self):
         return self.__str__()

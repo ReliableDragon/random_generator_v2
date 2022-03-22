@@ -1,0 +1,5 @@
+([
+Choice Block:
+Choice[weight: Equation[lhs=10, op=*, rhs=ChoiceFragment[value: "wealth", type: VARIABLE, order: NONE]], fragments: [ChoiceFragment[value: "floobly", type: TEXT, order: NONE]], level: 0, nesting: 0]
+Equation[lhs=10, op=*, rhs=ChoiceFragment[value: "wealth", type: VARIABLE, order: NONE]]: floobly
+], {})

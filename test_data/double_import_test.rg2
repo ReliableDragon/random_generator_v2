@@ -2,5 +2,5 @@ double_imports_test
 simple_import:simple_import.rg2
 nested_import:nested_import.rg2
 
-10 one @simple_import
-10 two @nested_import
+10 one #simple_import
+10 two #nested_import

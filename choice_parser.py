@@ -32,97 +32,74 @@ class ChoiceParser():
                 logger.fatal(f'Error encountered in file {self.current_file} at line {self.line_num} ({line}): {e.msg}')
                 raise
             idx += length
-            # logging.info(f'fragment generated: {fragment}')
+            logging.info(f'fragment generated: {fragment}')
+            # logging.info(f'new index: {idx} makes line {line[idx:]}')
             fragments.append(fragment)
         # logger.info(f'Fragments: {fragments}')
         return fragments
 
-    def parse_single_fragment(self, line, idx):
+    def parse_single_fragment(self, line, idx=0):
         idx = idx
         text = ''
         length = None
-        # logger.info(f'Parsing line "{line[idx:]}"')
-        if line[idx] == '$':
-            fragment, length = self.parse_subchoice_fragment(line, idx)
-            # logging.info(f'parse_subchoice_fragment.length: {length}')
-            self.num_subchoices.incr()
-        elif line[idx] =='@':
-            fragment, length = self.parse_control_fragment(line, idx)
+        logger.info(f'Parsing line "{line[idx:]}"')
+        if line[idx] in ['$', '@', '#']:
+            sym = line[idx]
+            line = line[idx+1:]
+            length = 1
+
+            order, or_length, line = self.get_order_override(line, sym)
+            logger.info(f'Parsed order override {order}, remaining line "{line}"')
+            length += or_length
+            call_length = 0
+            if sym == '$':
+                # Special case if we call $ as a function.
+                if line and line[0] == '(':
+                    fragment, call_length = self.parse_var_or_func_call('$' + line, order)
+                else:
+                    fragment = ChoiceFragment(value=self.num_subchoices.count, order=order, type='SUBCHOICE')
+                logging.info(f'parsed subchoice fragment: {fragment}')
+                self.num_subchoices.incr()
+            # elif line[idx] =='@':
+            #     fragment, length = self.parse_control_fragment(line, idx)
+            elif sym == '@':
+                fragment, call_length = self.parse_expression_call(line, order)
+            elif sym == '#':
+                fragment, call_length = self.parse_var_or_func_call(line, order)
+            length += call_length
+
             # logging.info(f'parse_control_fragment.length: {length}')
         else:
+            # Text fragment
             sc_loc = line.find('$', idx)
             if sc_loc == -1:
                 sc_loc = len(line)
-            cf_loc = line.find('@', idx)
-            if cf_loc == -1:
-                cf_loc = len(line)
-            nearest_char = min(sc_loc, cf_loc)
+            ex_loc = line.find('@', idx)
+            if ex_loc == -1:
+                ex_loc = len(line)
+            vf_loc = line.find('#', idx)
+            if vf_loc == -1:
+                vf_loc = len(line)
+            nearest_char = min(sc_loc, ex_loc, vf_loc)
             fragment = ChoiceFragment(line[idx:nearest_char])
             length = nearest_char - idx
-        # logging.info(f'length: {length}')
+        logging.info(f'length: {length}')
         if not length:
             raise ParseError(f'parse_single_fragment is stalled. This should never happen.')
         return fragment, length
 
-    def parse_subchoice_fragment(self, line, idx=0):
-        line = line[idx+1:]
-        length = 1
-        bracket_re = re.match(r'\[\d+\]', line)
-        space_re = re.match(r'\d+(?: |$)', line)
-        if bracket_re:
-            # re.end() points at the char AFTER the end of the match
-            subchoice_end = bracket_re.end() - 1
-            order = int(line[1:subchoice_end])
-            line = line[subchoice_end+1:]
-            # +1 to account for 0-indexing
-            length += subchoice_end + 1
-        elif space_re:
-            subchoice_end = space_re.end()
-            # logging.info(f'line: {line}, re: {space_re}')
-            order = int(line[:subchoice_end])
-            # No +1 because it's cancelled out by the -1 to not consume the space/EOL.
-            length += subchoice_end - 1
-        else:
-            order = 'NONE'
-        return ChoiceFragment(value=self.num_subchoices.count, order=order, type='SUBCHOICE'), length
-
-    def parse_control_fragment(self, line, idx=0):
-        # logger.info(f'Parsing control fragment in line "{line[idx:]}"')
-        order = 'NONE'
-        line = line[idx+1:]
-        length = 1
-
-        # TODO: Check for single or double brackets and use that to determine if
-        # there's an order override. This approach arbitrarily disallows expression
-        # of the form @[$NUM].
-        if line[0] == '[':
-            type = 'EXPRESSION'
-            # TODO: Should this go in expression_parser instead?
-            if re.match(CONTROL_ORDER_REGEX, line):
-                # logger.info('Found expression.')
-                open_brace = 0
-                close_brace = find_matching_brace('[', ']', 0, line)
-                order = int(line[open_brace+1:close_brace])
-                next_idx = close_brace + 1
-                line = line[next_idx:]
-                length += next_idx
-                if next_idx >= len(line) and not line[next_idx].isalpha() and line[next_idx] != '[':
-                    raise ParseError(f'{self.current_file} line {self.line_num}: Control statement @{line[open_brace:close_brace+1]} had order override, but did not contain an actual control statement following it.')
-            value, call_length, type = self.parse_expression(line)
-            # logger.info(f'Call length: {call_length}')
-        else:
-            value, call_length, type = self.parse_var_or_func(line)
-        length += call_length
-        # logger.info(f'Parsed fragment {line[idx:length]}')
-        return ChoiceFragment(value=value, type=type, order=order), length
-
-    def parse_var_or_func(self, line):
+    def parse_var_or_func_call(self, line, order, idx=0):
+        logger.info(f'Parsing var/func fragment in line "{line[idx:]}"')
         # Variables and functions can be called "naked" provided the next character is non-word.
         variable_re = re.match(VARIABLE_REGEX, line)
+        name_end = None
         if not variable_re:
-            if not bool(variable_re):
+            if line[0] == '$':
+                name_end = 1
+            else:
                 raise ParseError(f'{self.current_file} line {self.line_num}: Invalid variable on line {line}.')
-        name_end = variable_re.end()
+        else:
+            name_end = variable_re.end()
 
         if len(line) > name_end and line[name_end] == '(':
             type = 'FUNCTION'
@@ -141,22 +118,49 @@ class ChoiceParser():
             value = line[:length]
             if value in RESERVED_WORDS:
                 raise ParseError(f'{self.current_file} line {self.line_num}: {value} is a reserved word, and cannot be used as a variable name.')
-        return value, length, type
+        # length += call_length
+        logger.info(f'Parsed fragment {line[idx:length]} of length {length}')
+        return ChoiceFragment(value=value, type=type, order=order), length
 
-    def parse_expression(self, line):
+    def get_order_override(self, line, sym):
+        order = 'NONE'
+        length = 0
+        name_dict = {
+            '$': 'subchoice',
+            '#': 'variable/function',
+            '@': 'expression'
+        }
+        name = name_dict[sym]
+        if re.match(CONTROL_ORDER_REGEX, line):
+            # logger.info('Found expression.')
+            open_brace = 0
+            close_brace = find_matching_brace('[', ']', 0, line)
+            order = int(line[open_brace+1:close_brace])
+            length = close_brace + 1
+            # length += next_idx
+            invalid_vf_override = sym == '#' and (length >= len(line) or not (line[length].isalpha() or line[length] == '$'))
+            invalid_expr_override = sym == '@' and (length >= len(line) or line[length] != '[')
+            if not sym != '$' and (invalid_expr_override or invalid_vf_override):
+                raise ParseError(f'{self.current_file} line {self.line_num}: {name} in line {line} had order override from characters {open_brace} to {close_brace} ("{line[open_brace:close_brace+1]}"), but did not contain an actual {name} following it.')
+            line = line[length:]
+        return order, length, line
+
+    def parse_expression_call(self, line, order, idx=0):
         '''
         Allows: Mathematical expressions, state get/set/modify, order customization, function calls, import calls, subcalls. Yikes.
         Let's start at the beginning, I guess.
         '''
+        assert line[0] == '[', f'{self.current_file} line {self.line_num}: Expression call made, but no brackets found!'
+        # TODO: Should this go in expression_parser instead?
         close_bracket = find_matching_brace('[', ']', 0, line)
         if close_bracket == -1:
             raise ParseError(f'{self.current_file} line {self.line_num}: Mismatched expression braces: {line}.')
-        expression_parser = ExpressionParser(self.parse_single_fragment, self.current_file, self.line_num, self.parse_var_or_func, self.num_subchoices)
+        expression_parser = ExpressionParser(self.parse_single_fragment, self.current_file, order, self.line_num, self.num_subchoices)
         value, length = expression_parser.parse_expression(line)
         # logger.info(f'Parsed expression "{line[:length]}"')
 
-        return value, length, 'EXPRESSION'
-        #ChoiceFragment(value=value, type='EXPRESSION'),
+        # logger.info(f'Parsed fragment {line[idx:length]}')
+        return ChoiceFragment(value=value, type='EXPRESSION', order=order), length
 
 
 

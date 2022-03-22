@@ -9,7 +9,7 @@ class Assignment():
 
     VALID_LHS_RE = VARIABLE_REGEX
     ASSIGNMENT_FNS = {
-        '=': lambda a, b: b,
+        ':=': lambda a, b: b,
         '+=': lambda a, b: a + b,
         '-=': lambda a, b: a - b,
         '*=': lambda a, b: a * b,
@@ -37,21 +37,28 @@ class Assignment():
         if lhs in RESERVED_WORDS:
             return f'Assignment with lhs={lhs} is invalid. {lhs} is a reserved word.'
         if type(rhs) != Equation and rhs != '$':
-            return f'Assignment with rhs={rhs} of type {type(rhs)} is invalid. Assignment rhs must be an expression.'
-        if op not in self.VALID_OPS:
-            return f'Assignment with op={op} is invalid. Valid ops are {self.VALID_OPS}.'
+            return f'Assignment with rhs={rhs} of type {type(rhs)} is invalid. Assignment rhs must be an equation.'
+        if op not in VALID_OPS:
+            return f'Assignment with op={op} is invalid. Valid ops are {VALID_OPS}.'
         return None
 
-    def evaluate(self, state):
+    def evaluate(self, state, evaluate_fragment):
+        value = self.rhs.evaluate(evaluate_fragment)
+
         if not self.lhs in state:
-            rtype = self.rhs.get_type()
-            if rtype in [int, float, bool, ChoiceFragment]:
+            rtype = type(value)
+            if rtype in [int, float, bool]:
                 state[self.lhs] = 0
             if rtype == str:
                 state[self.lhs] = ''
+        state[self.lhs] = self.ASSIGNMENT_FNS[self.op](state[self.lhs], value)
+        return state
 
-        value = self.rhs.evaluate()
-        state[self.lhs] = self.ASSIGNMENT_FNS[self.op](state[self.lhs], rhs)
+    def __str__(self):
+        return f'Assignment[lhs={str(self.lhs)}, op={str(self.op)}, rhs={str(self.rhs)}]'
+
+    def __repr__(self):
+        return self.__str__()
 
 
 

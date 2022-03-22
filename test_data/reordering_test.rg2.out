@@ -19,8 +19,8 @@ CG[level: 0, nesting: 1]
   10: soldiers
 , 
 Choice Block:
-Choice[weight: 10000, fragments: [ChoiceFragment[value: "0", type: SUBCHOICE, order: 2], ChoiceFragment[value: " statues of ", type: TEXT, order: NONE], ChoiceFragment[value: "1", type: SUBCHOICE, order: 1], ChoiceFragment[value: "1", type: TEXT, order: NONE]], level: 0, nesting: 1]
-10000: 0 statues of 11
+Choice[weight: 10000, fragments: [ChoiceFragment[value: "0", type: SUBCHOICE, order: NONE], ChoiceFragment[value: "2 statues of ", type: TEXT, order: NONE], ChoiceFragment[value: "1", type: SUBCHOICE, order: NONE], ChoiceFragment[value: "1", type: TEXT, order: NONE]], level: 0, nesting: 1]
+10000: 02 statues of 11
 CG[level: 0, nesting: 1]
 
   Choice[weight: 10, fragments: [ChoiceFragment[value: "small", type: TEXT, order: NONE]], level: 1, nesting: 1]

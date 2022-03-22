@@ -1,6 +1,9 @@
+import logging
 
 from constants import OPS_PRIORITY_LIST
 from equation import Equation
+
+logger = logging.getLogger('equation_builder')
 
 class EquationBuilder():
     def __init__(self, current_file, line_num):
@@ -10,7 +13,7 @@ class EquationBuilder():
     def build_eq_tree(self, tokens):
         op_stack = []
         val_stack = []
-        # logger.info(f'tokens: {tokens}')
+        logger.info(f'tokens: {tokens}')
 
         for i, tk in enumerate(tokens):
             # logger.info(f'Processing token "{tk}".')

@@ -1,5 +1,5 @@
 ([
 Choice Block:
-Choice[weight: 1, fragments: [ChoiceFragment[value: "[ChoiceFragment[value: "Equation[lhs: 1, op=+, rhs=Equation[lhs: 1, op=*, rhs=5]]", type: EQUATION, order: NONE]]", type: EXPRESSION, order: 2]], level: 0, nesting: 0]
-1: [ChoiceFragment[value: "Equation[lhs: 1, op=+, rhs=Equation[lhs: 1, op=*, rhs=5]]", type: EQUATION, order: NONE]]
+Choice[weight: 1, fragments: [ChoiceFragment[value: "[ChoiceFragment[value: "Equation[lhs=1, op=+, rhs=Equation[lhs=1, op=*, rhs=5]]", type: EQUATION, order: 2]]", type: EXPRESSION, order: 2]], level: 0, nesting: 0]
+1: [ChoiceFragment[value: "Equation[lhs=1, op=+, rhs=Equation[lhs=1, op=*, rhs=5]]", type: EQUATION, order: 2]]
 ], {})
