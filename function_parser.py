@@ -26,14 +26,15 @@ class FunctionParser():
         arg_strs = self.parse_args(args_str, function_name)
         # logger.info(f'Parsed arguments string into arguments: {arg_strs}')
         args = []
-
+        makes_subcalls = False
         if function_name == '$':
             args.append(ChoiceFragment(value=num_subchoices.get(), type='TEXT'))
             num_subchoices.incr()
+            makes_subcalls = True
 
         for arg_str in arg_strs:
-            fragment_argument, _ = self.parse_single_fragment(arg_str, 0)
-            # logger.info(f'Parsed argument into fragment: {fragment_argument}')
+            fragment_argument, _ = self.parse_single_fragment(arg_str)
+            # logger.info(f'Parsed argument {arg_str} into fragment: {fragment_argument}')
             args.append(fragment_argument)
 
         function = Function(function_name, args)
@@ -49,21 +50,26 @@ class FunctionParser():
         i = 1
         paren_count = 0
         argument = ''
+        is_quoted = False
         while idx < len(arg_str):
             ch = arg_str[idx]
             if ch == '(':
                 close_paren = find_matching_brace('(', ')', idx, arg_str)
                 argument += arg_str[idx:close_paren+1]
                 idx = close_paren
-            elif ch == ',':
+            elif ch == ',' and not is_quoted:
                 arguments.append(argument)
                 argument = ''
                 while idx + 1 < len(arg_str) and arg_str[idx+1] == ' ':
                     idx += 1
+            elif ch == '"':
+                argument += arg_str[idx]
+                is_quoted = not is_quoted
             else:
                 argument += arg_str[idx]
             idx += 1
         # Append the last argument, unless it ended with a comma.
         if argument:
             arguments.append(argument)
+        # logger.info(f'Arguments: {arguments}')
         return arguments

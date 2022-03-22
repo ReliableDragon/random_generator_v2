@@ -1,9 +1,12 @@
 import re
+import logging
 
 from choice_fragment import ChoiceFragment
 from equation import Equation
 from constants import VARIABLE_REGEX, RESERVED_WORDS
 from constants import VALID_ASSIGNMENT_OPS as VALID_OPS
+
+logger = logging.getLogger('assignment')
 
 class Assignment():
 
@@ -19,8 +22,11 @@ class Assignment():
     }
 
     def __init__(self, lhs, op, rhs):
+        # Variable-compliant string
         self.lhs = lhs
+        # Op-compliant string
         self.op = op
+        # Equation
         self.rhs = rhs
 
     def validate(self):
@@ -44,13 +50,18 @@ class Assignment():
 
     def evaluate(self, state, evaluate_fragment):
         value = self.rhs.evaluate(evaluate_fragment)
+        logger.info(f'state: {state}, assignment: {self}')
 
         if not self.lhs in state:
             rtype = type(value)
+            if rtype == Equation:
+                rtype.get_type()
             if rtype in [int, float, bool]:
                 state[self.lhs] = 0
-            if rtype == str:
+            elif rtype == str:
                 state[self.lhs] = ''
+            elif rtype == list:
+                state[self.lhs] = []
         state[self.lhs] = self.ASSIGNMENT_FNS[self.op](state[self.lhs], value)
         return state
 

@@ -33,12 +33,14 @@ class EquationParser():
     def parse_equation(self, eq_str):
         eq_str = self.remove_extraneous_spaces(eq_str)
         eq_str = eq_str.lower()
+        # logger.info(f'eq_str: {eq_str}')
         idx = 0
         tokens = []
         last_tk_type = None
         while idx < len(eq_str):
             tk, last_tk_type, next_idx = self.get_next_token(eq_str, idx, last_tk_type)
             idx = next_idx
+            # logger.info(f'tk: {tk}')
             # logger.info(f'idx: {idx}')
             tokens.append(tk)
         assert tokens, f'{self.current_file} line {self.line_num}: Attempted to parse equation, but did not find any tokens after parsing.'
@@ -74,40 +76,6 @@ class EquationParser():
         elif tk_type == 'ALPHA' and ch == '"':
             value = tk + ch
             idx += 1
-        elif tk_type in ['VAR', 'SUB'] and ch == '[':
-            tk += ch
-            idx += 1
-            self.num_brackets += 1
-        elif tk_type in ['VAR', 'SUB'] and ch == ']':
-            tk += ch
-            idx += 1
-            self.num_brackets -= 1
-        elif tk_type in ['VAR', 'SUB'] and self.num_brackets > 0:
-            assert ch.isnumeric(), f'{self.current_file} line {self.line_num}: Attempted to parse equation, but got invalid order override.'
-            tk += ch
-            idx += 1
-        elif tk_type in ['VAR', 'SUB'] and ch == '(':
-            self.num_parens += 1
-            tk += ch
-            idx += 1
-            tk_type = 'FUNC'
-        elif tk_type in ['FUNC'] and ch == '(':
-            self.num_parens += 1
-            tk += ch
-            idx += 1
-        elif tk_type in ['FUNC'] and ch == ')':
-            self.num_parens -= 1
-            tk += ch
-            idx += 1
-            if self.num_parens == 0:
-                value = tk
-        elif tk_type == 'SUB' and tk[-1] in ['$', ']'] and ch != '(':
-            value = tk
-        # elif tk_type == 'SUB' and ch == ')':
-        #     value = tk + ch
-        #     idx += 1
-        elif tk_type == 'VAR' and (not ch.isalnum() or ch == '_'):
-            value = tk
         else:
             tk += ch
             idx += 1
@@ -122,6 +90,12 @@ class EquationParser():
         ch = eq_str[idx]
         # logger.info(f'ch: {ch}')
         tk_type = self.get_tk_type(ch, idx, eq_str)
+        if tk_type in ['VAR', 'SUB']:
+            token, length = self.parse_single_fragment(eq_str[idx:])
+            if token.type == 'FUNCTION':
+                tk_type = 'FUNC'
+            return token, tk_type, idx + length
+
 
         tk += ch
         idx += 1

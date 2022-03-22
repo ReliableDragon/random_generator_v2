@@ -14,6 +14,7 @@ class Generator():
     def __init__(self, choice_blocks, imports):
         self.choice_blocks = choice_blocks
         self.imports = imports
+        self.chosen = {}
         self.state = {}
         # self.random_generator = random_generator
 
@@ -32,7 +33,7 @@ class Generator():
         # logging.info(f'Results: {results}')
         return results
 
-    def generate_choice(self, choice):
+    def generate_choice(self, choice, uniqueness = None):
         ordered_fragments = []
         values = []
         choice_groups = choice.choice_groups
@@ -46,7 +47,7 @@ class Generator():
         # logging.info(f'Ordered fragments: {ordered_fragments}')
 
         for _, i, fragment in ordered_fragments:
-            value = self.evaluate_fragment(fragment, choice)
+            value = self.evaluate_fragment(fragment, choice, uniqueness=uniqueness)
             heappush(values, (i, value))
 
         # logging.info(f'values: {values}')
@@ -54,15 +55,15 @@ class Generator():
         # logger.info(f'result: {result}')
         return result
 
-    def evaluate_fragment(self, fragment, choice):
+    def evaluate_fragment(self, fragment, choice, uniqueness = None):
         # logging.info(f'Fragment: {fragment}')
-        curryed_evaluate_fragment = lambda a: self.evaluate_fragment(a, choice)
+        curryed_evaluate_fragment = lambda a: self.evaluate_fragment(a, choice, uniqueness=uniqueness)
         if fragment.type == 'TEXT':
             return fragment.value
 
         if fragment.type == 'SUBCHOICE':
             choice_group = choice.choice_groups[fragment.value]
-            return self.pick_choice(choice_group, curryed_evaluate_fragment)
+            return self.pick_choice(choice_group, curryed_evaluate_fragment, uniqueness=uniqueness)
 
         if fragment.type == 'VARIABLE':
             variable = fragment.value
@@ -73,10 +74,7 @@ class Generator():
             function = fragment.value
             function.args = [curryed_evaluate_fragment(f) for f in function.args]
             # logger.info(f'Function post-arg-evaluation: {function}')
-            # if function.name in self.imports:
-            #     assert len(function.args) == 1, f'Got function call to import "{function.name}", but call did not provide exactly 1 argument.'
-            #     return self.generate_import(function.name, function.args[0])
-            return str(function.execute(self.imports, self.state, self.generate_import, choice.choice_groups, curryed_evaluate_fragment, self.pick_choice))
+            return function.execute(self.imports, self.state, self.generate_import, choice.choice_groups, curryed_evaluate_fragment, self.pick_choice)
 
         if fragment.type == 'EXPRESSION':
             # logger.info(f'Expression fragment: {fragment}')
@@ -128,7 +126,7 @@ class Generator():
                 result = ''
         return result
 
-    def pick_choice(self, choice_group, evaluate_fragment):
+    def pick_choice(self, choice_group, evaluate_fragment, n=1, uniqueness=None):
         # logger.info(f'Choice Group: {choice_group}')
         # logger.info(choice_group)
         # logger.info(f'Weights: {[c.weight for c in choice_group.choices]}')
@@ -144,19 +142,45 @@ class Generator():
                     raise
             evaluated_weights.append(weight)
         # logger.info(f'Evaluated weights: {evaluated_weights}')
+        return self.generate_choices(evaluated_weights, choice_group, evaluate_fragment, n, uniqueness)
 
-        total = sum(evaluated_weights)
-        rand = random.randint(1, total)
-        # logger.info(f'total: {total}, rand: {rand}')
-        i = -1
-        _sum = 0
-        # < bc otherwise we'll roll again when at max value and overshoot
-        while _sum < rand:
-            i += 1
-            # logger.info(f'i: {i}, sum: {_sum}, choice weight: {choice_group.choices[i].weight}')
-            # These are in sync with choice_group.choices, as we don't want to override
-            # those, in case we evaluate this choice group multiple times.
-            _sum += evaluated_weights[i]
-        chosen = choice_group.choices[i]
-        # logger.info(chosen)
-        return self.generate_choice(chosen)
+    def generate_choices(self, weights, choice_group, evaluate_fragment, n=1, uniqueness=None):
+        result = []
+        total = sum(weights)
+        for i in range(n):
+            rand = random.randint(1, total)
+            # logger.info(f'total: {total}, rand: {rand}')
+            i = -1
+            _sum = 0
+            # < bc otherwise we'll roll again when at max value and overshoot
+            while _sum < rand:
+                i += 1
+                # logger.info(f'i: {i}, sum: {_sum}, choice weight: {choice_group.choices[i].weight}')
+                # These are in sync with choice_group.choices, as we don't want to override
+                # those, in case we evaluate this choice group multiple times.
+                _sum += weights[i]
+            chosen = choice_group.choices[i]
+            if uniqueness == 0:
+                del choice_group.choices[i]
+            # logger.info(chosen)
+            og_uniqueness = uniqueness
+            if uniqueness == 0:
+                uniqueness = None
+            elif uniqueness != None and uniqueness != -1:
+                uniqueness=uniqueness-1
+            choice = self.generate_choice(chosen, uniqueness=uniqueness)
+            uniqueness = og_uniqueness
+
+            result.append(choice)
+
+        if n == 1:
+            result = result[0]
+        return result
+
+
+
+
+
+
+
+# keep buffer

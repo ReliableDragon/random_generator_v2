@@ -26,7 +26,7 @@ class ChoiceParser():
         while idx < len(line):
             # logger.info(f'Parsing choice data in line: {line[idx:]}')
             try:
-                fragment, length = self.parse_single_fragment(line, idx)
+                fragment, length = self.parse_single_fragment(line[idx:])
                 # logger.info(f'PCD idx: {idx}, length: {length}')
             except ParseError as e:
                 logger.fatal(f'Error encountered in file {self.current_file} at line {self.line_num} ({line}): {e.msg}')
@@ -38,14 +38,13 @@ class ChoiceParser():
         # logger.info(f'Fragments: {fragments}')
         return fragments
 
-    def parse_single_fragment(self, line, idx=0):
-        idx = idx
+    def parse_single_fragment(self, line):
         text = ''
         length = None
-        # logger.info(f'Parsing line "{line[idx:]}"')
-        if line[idx] in ['$', '@', '#']:
-            sym = line[idx]
-            line = line[idx+1:]
+        # logger.info(f'Parsing line "{line}"')
+        if line[0] in ['$', '@', '#']:
+            sym = line[0]
+            line = line[1:]
             length = 1
 
             order, or_length, line = self.get_order_override(line, sym)
@@ -56,6 +55,8 @@ class ChoiceParser():
                 # Special case if we call $ as a function.
                 if line and line[0] == '(':
                     fragment, call_length = self.parse_var_or_func_call('$' + line, order)
+                    # -1 because we're adding an extra character
+                    call_length -= 1
                 else:
                     fragment = ChoiceFragment(value=self.num_subchoices.count, order=order, type='SUBCHOICE')
                 # logging.info(f'parsed subchoice fragment: {fragment}')
@@ -71,23 +72,29 @@ class ChoiceParser():
             # logging.info(f'parse_control_fragment.length: {length}')
         else:
             # Text fragment
-            sc_loc = line.find('$', idx)
-            if sc_loc == -1:
-                sc_loc = len(line)
-            ex_loc = line.find('@', idx)
-            if ex_loc == -1:
-                ex_loc = len(line)
-            vf_loc = line.find('#', idx)
-            if vf_loc == -1:
-                vf_loc = len(line)
-            nearest_char = min(sc_loc, ex_loc, vf_loc)
-            fragment = ChoiceFragment(line[idx:nearest_char])
-            length = nearest_char - idx
+            if line[0] == '"':
+                end_text = line.find('"', 1)
+                start_text = 1
+            else:
+                sc_loc = line.find('$')
+                if sc_loc == -1:
+                    sc_loc = len(line)
+                ex_loc = line.find('@')
+                if ex_loc == -1:
+                    ex_loc = len(line)
+                vf_loc = line.find('#')
+                if vf_loc == -1:
+                    vf_loc = len(line)
+                start_text = 0
+                end_text = min(sc_loc, ex_loc, vf_loc)
+            fragment = ChoiceFragment(line[start_text:end_text])
+            length = end_text
         # logging.info(f'length: {length}')
         if not length:
             raise ParseError(f'parse_single_fragment is stalled. This should never happen.')
         return fragment, length
 
+    # returns: ChoiceFragment:parsed, int:length
     def parse_var_or_func_call(self, line, order, idx=0):
         # logger.info(f'Parsing var/func fragment in line "{line[idx:]}"')
         # Variables and functions can be called "naked" provided the next character is non-word.

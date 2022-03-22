@@ -23,6 +23,11 @@ class GeneratorTest(unittest.TestCase):
         result, expected = process_file(filename)
         self.assertEqual(result, expected)
 
+    def test_equation_list(self):
+        filename = r'test_data\equation_list_test.rg2'
+        result, expected = process_file(filename)
+        self.assertEqual(result, expected)
+
     def test_equation_weight(self):
         filename = r'test_data\equation_weight_test.rg2'
         result, expected = process_file(filename)

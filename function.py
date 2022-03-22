@@ -14,23 +14,29 @@ class Function():
         self.args = args
 
     def validate(self):
-        if self.name == 'gauss':
+        if self.name in ['gauss', 'gamma', 'rand', 'max', 'min']:
             if len(self.args) != 2:
-                return f'gauss(mu, sigma) function requires exactly 2 parameters, but got {len(self.args)}.'
-        elif self.name == 'gamma':
-            if len(self.args) != 2:
-                return f'gamma(alpha, beta) function requires exactly 2 parameters, but got {len(self.args)}.'
-        elif self.name == 'rand':
-            if len(self.args) != 2:
-                return f'rand(start, stop) function requires exactly 2 parameters, but got {len(self.args)}.'
+                return math_error_msg(self.name, self.args)
+        # if self.name == 'gauss':
+        #     if len(self.args) != 2:
+        #         return f'gauss(mu, sigma) function requires exactly 2 parameters, but got {len(self.args)}.'
+        # elif self.name == 'gamma':
+        #     if len(self.args) != 2:
+        #         return f'gamma(alpha, beta) function requires exactly 2 parameters, but got {len(self.args)}.'
+        # elif self.name == 'rand':
+        #     if len(self.args) != 2:
+        #         return f'rand(start, stop) function requires exactly 2 parameters, but got {len(self.args)}.'
         elif self.name == 'shuffle':
             return None
         elif self.name == '$':
-            if len(self.args) not in [1, 2]:
-                return f'$(choice_group, repetition?) function requires 1 or 2 parameter, but got {len(self.args)}.'
+            if len(self.args) not in [1, 2, 3]:
+                return f'$(choice_group, repetition?, uniqueness_level?) function requires 1 to 3 parameters, but got {len(self.args)}.'
         elif self.name == 'vals':
             if len(self.args) != 1:
                 return f'vals(list_to_filter) function requires exactly 1 parameter, but got {len(self.args)}.'
+        elif self.name == 'int':
+            if len(self.args) != 1:
+                return f'int(value) function requires exactly 1 parameter, but got {len(self.args)}.'
         elif self.name == 'rep':
             if len(self.args) not in [4, 5]:
                 return f'rep(first, repeated, last_repeated?, last, values) function requires 4 or 5 parameters, but got {len(self.args)}.'
@@ -42,7 +48,7 @@ class Function():
     def execute(self, imports, state, generate_import, choice_groups, evaluate_fragment, pick_choice):
         # logger.info(f'Executing function {self}.')
         # logger.info(f'Choice groups: {choice_groups}')
-        if self.name in ['gauss', 'gamma', 'rand']:
+        if self.name in ['gauss', 'gamma', 'rand', 'max', 'min']:
             x = self.args[0]
             y = self.args[1]
             if self.name == 'gauss':
@@ -51,18 +57,35 @@ class Function():
                 value = int(random.gammavariate(int(x), int(y)))
             elif self.name == 'rand':
                 value = int(random.randint(int(x), int(y)))
+            elif self.name == 'max':
+                value = int(max(int(x), int(y)))
+            elif self.name == 'min':
+                value = int(min(int(x), int(y)))
         elif self.name == 'shuffle':
             random.shuffle(self.args)
             value = self.args
+        elif self.name == 'int':
+            value = int(self.args[0])
         # For uniqueness, add another arg here, then filter choice groups.
         elif self.name == '$':
             cg_index = int(self.args[0])
             repetition = 1
-            if len(self.args) == 2:
+            uniqueness = None
+            if len(self.args) >= 2:
                 repetition = int(self.args[1])
+            if len(self.args) >= 3:
+                # How many levels deep to make each call unique. 0 is top-level,
+                # 1 is the level below, etc. -1 is special, and means "leaf" or
+                # no two can be identical. This is destructive, but since choice
+                # groups cannot be reused, it should be okay. If that ever changes
+                # then this may become a problem. (But you can always just put
+                # a choice group into another file and import it if you need to
+                # reference it multiple times...)
+                uniqueness = int(self.args[2])
             value = []
-            for _ in range(repetition):
-                value.append(pick_choice(choice_groups[cg_index], evaluate_fragment))
+            # for _ in range(repetition):
+            value = pick_choice(choice_groups[cg_index], evaluate_fragment, n=repetition, uniqueness=uniqueness)
+            logger.info(f'$-value: {value} of type {type(value)}')
         elif self.name == 'vals':
             lst = self.args[0]
             lst_t = type(lst)
@@ -87,6 +110,7 @@ class Function():
         return value
 
     def build_rep_value(self):
+        logger.info(f'rep() called with args: {self.args}')
         # rep("$", ", $", ", and $.", "effects")
         first = None
         repeated = None
@@ -99,6 +123,7 @@ class Function():
             first, repeated, last_repeated, last, values = self.args
         result = ''
         last_val = len(values) - 1
+        # logger.info(f'values: {values}, last_val: {last_val}')
         for i, v in enumerate(values):
             if i == 0:
                 result += first.replace('$', v)
@@ -110,13 +135,17 @@ class Function():
                 else:
                     result += repeated.replace('$', v)
             elif i == last_val:
-                result += repeated.replace('$', v)
+                result += last.replace('$', v)
             else:
                 raise ValueError('Got impossible index!')
-        value = result
+        logger.info(f'Result: {result}')
+        return result
 
     def __str__(self):
         return f'Function[name: {self.name}, args: {self.args}]'
 
     def __repr__(self):
         return self.__str__()
+
+def math_error_msg(name, args, a='a', b='b'):
+    return f'{name}({a}, {b}) function requires exactly 2 parameters, but got {len(args)}.'
