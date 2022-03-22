@@ -40,8 +40,8 @@ class Function():
             return None
 
     def execute(self, imports, state, generate_import, choice_groups, evaluate_fragment, pick_choice):
-        logger.info(f'Executing function {self}.')
-        logger.info(f'Choice groups: {choice_groups}')
+        # logger.info(f'Executing function {self}.')
+        # logger.info(f'Choice groups: {choice_groups}')
         if self.name in ['gauss', 'gamma', 'rand']:
             x = self.args[0]
             y = self.args[1]

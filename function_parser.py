@@ -17,14 +17,14 @@ class FunctionParser():
         self.line_num = line_num
 
     def parse_function(self, line, num_subchoices):
-        logger.info(f'Parsing function string {line}')
+        # logger.info(f'Parsing function string {line}')
         open_paren = line.find('(')
         close_paren = find_matching_brace('(', ')', open_paren, line)
         function_name = line[:open_paren]
         assert close_paren != -1, f'{self.current_file} line {self.line_num}: No matching close paren found for function {function_name}.'
         args_str = line[open_paren+1:close_paren]
         arg_strs = self.parse_args(args_str, function_name)
-        logger.info(f'Parsed arguments string into arguments: {arg_strs}')
+        # logger.info(f'Parsed arguments string into arguments: {arg_strs}')
         args = []
 
         if function_name == '$':
@@ -33,7 +33,7 @@ class FunctionParser():
 
         for arg_str in arg_strs:
             fragment_argument, _ = self.parse_single_fragment(arg_str, 0)
-            logger.info(f'Parsed argument into fragment: {fragment_argument}')
+            # logger.info(f'Parsed argument into fragment: {fragment_argument}')
             args.append(fragment_argument)
 
         function = Function(function_name, args)

@@ -143,10 +143,10 @@ class EquationParser():
         if tk_type in ['VAR', 'FUNC', 'SUB']:
             if tk_type == 'FUNC':
                 assert value[-1] == ')', f'{self.current_file} line {self.line_num}: Attempted to parse equation, but got unclosed parentheses for function call starting at index {start_idx}.'
-            logger.info(f'Processing token {value}.')
+            # logger.info(f'Processing token {value}.')
             # value = value[1:]
             parsed_value, _ = self.parse_single_fragment(value)
-            logger.info(f'Processed token {value} into {parsed_value}')
+            # logger.info(f'Processed token {value} into {parsed_value}')
             value = parsed_value
             # value = ChoiceFragment(value=frag_value, type=type)
         elif value in ['true', 'false']:
@@ -164,7 +164,7 @@ class EquationParser():
             assert value[-1] == '"', f'{self.current_file} line {self.line_num}: Attempted to parse equation, but got unclosed string starting at index {start_idx}.'
             value = value[1:-1]
 
-        logger.info(f'Generated token "{tk}" of type {tk_type}')
+        # logger.info(f'Generated token "{tk}" of type {tk_type}')
         return value, tk_type, idx
 
     def get_tk_type(self, ch, idx, eq_str):

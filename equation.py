@@ -59,7 +59,7 @@ class Equation():
     # The one big thing we can't do here is validate ChoiceFragments, since it's
     # dynamic whether, say, a variable is an int or a string or an array.
     def validate(self):
-        logger.info(f'Validating equation {self}.')
+        # logger.info(f'Validating equation {self}.')
         lhs = self.lhs
         rhs = self.rhs
         op = self.op
@@ -84,7 +84,7 @@ class Equation():
             ltype = lhs.get_type()
         if rtype == Equation:
             rtype = rhs.get_type()
-        logger.info(f'ltype: {ltype}, rtype: {rtype}')
+        # logger.info(f'ltype: {ltype}, rtype: {rtype}')
 
         if rhs and rtype != ChoiceFragment and lhs and ltype != ChoiceFragment:
             conversion_safe = False
@@ -109,7 +109,7 @@ class Equation():
     def evaluate(self, evaluate_fragment):
         ltype = type(self.lhs)
         rtype = type(self.rhs)
-        logger.info(f'Equation pre-recursion: {self}. lhs_type = {ltype}, rhs_type = {rtype}.')
+        # logger.info(f'Equation pre-recursion: {self}. lhs_type = {ltype}, rhs_type = {rtype}.')
 
         # TODO: Consider if this is the best approach. I like that it only calls
         # out to the main generator when necessary, but don't love the two custom
@@ -122,7 +122,7 @@ class Equation():
             self.rhs = evaluate_fragment(self.rhs)
         elif rtype == Equation:
             self.rhs = self.rhs.evaluate(evaluate_fragment)
-        logger.info(f'Equation post-recursion: {self}')
+        # logger.info(f'Equation post-recursion: {self}')
 
         lhs = self.lhs
         rhs = self.rhs

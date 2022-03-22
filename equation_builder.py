@@ -13,7 +13,7 @@ class EquationBuilder():
     def build_eq_tree(self, tokens):
         op_stack = []
         val_stack = []
-        logger.info(f'tokens: {tokens}')
+        # logger.info(f'tokens: {tokens}')
 
         for i, tk in enumerate(tokens):
             # logger.info(f'Processing token "{tk}".')

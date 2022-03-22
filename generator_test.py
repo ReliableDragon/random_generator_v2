@@ -88,7 +88,7 @@ class GeneratorTest(unittest.TestCase):
         result, expected = process_file(filename)
         self.assertEqual(result, expected)
 
-def process_file(filename, override_file = True):
+def process_file(filename, override_file = False):
     random.seed(0)
     curr_path = os.getcwd()
     filepath = os.path.join(curr_path, filename)

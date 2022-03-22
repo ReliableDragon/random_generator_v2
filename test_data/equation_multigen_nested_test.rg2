@@ -1,3 +1,6 @@
 equation_multigen_nested
 
-1 @[$(#gauss(1, 10))]
+1 @[$(#rand(1, 7))]
+  10 one
+  10 two
+  10 three

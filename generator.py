@@ -22,7 +22,7 @@ class Generator():
         # logging.info(f'Imports: {self.imports}')
         self.state = {}
         for root_choice in self.choice_blocks:
-            logger.info(f'Root choice: {root_choice}')
+            # logger.info(f'Root choice: {root_choice}')
             curryed_evaluate_fragment = lambda a: self.evaluate_fragment(a, root_choice)
             # Have to do the first roll out here, because technically the root choices are equivalent to choice blocks,
             # since there's no line to use as a choice.
@@ -36,14 +36,14 @@ class Generator():
         ordered_fragments = []
         values = []
         choice_groups = choice.choice_groups
-        logging.info(f'Unordered fragments: {choice.fragments}')
+        # logging.info(f'Unordered fragments: {choice.fragments}')
 
         for i, fragment in enumerate(choice.fragments):
             order = fragment.order
             if order == 'NONE':
                 order = math.inf
             heappush(ordered_fragments, (order, i, fragment))
-        logging.info(f'Ordered fragments: {ordered_fragments}')
+        # logging.info(f'Ordered fragments: {ordered_fragments}')
 
         for _, i, fragment in ordered_fragments:
             value = self.evaluate_fragment(fragment, choice)
@@ -55,7 +55,7 @@ class Generator():
         return result
 
     def evaluate_fragment(self, fragment, choice):
-        logging.info(f'Fragment: {fragment}')
+        # logging.info(f'Fragment: {fragment}')
         curryed_evaluate_fragment = lambda a: self.evaluate_fragment(a, choice)
         if fragment.type == 'TEXT':
             return fragment.value
@@ -69,39 +69,39 @@ class Generator():
             return self.generate_variable(variable)
 
         if fragment.type == 'FUNCTION':
-            logger.info(f'Function fragment: {fragment}')
+            # logger.info(f'Function fragment: {fragment}')
             function = fragment.value
             function.args = [curryed_evaluate_fragment(f) for f in function.args]
-            logger.info(f'Function post-arg-evaluation: {function}')
+            # logger.info(f'Function post-arg-evaluation: {function}')
             # if function.name in self.imports:
             #     assert len(function.args) == 1, f'Got function call to import "{function.name}", but call did not provide exactly 1 argument.'
             #     return self.generate_import(function.name, function.args[0])
             return str(function.execute(self.imports, self.state, self.generate_import, choice.choice_groups, curryed_evaluate_fragment, self.pick_choice))
 
         if fragment.type == 'EXPRESSION':
-            logger.info(f'Expression fragment: {fragment}')
+            # logger.info(f'Expression fragment: {fragment}')
             expression = fragment.value
-            logger.info(f'Expression: {expression}')
+            # logger.info(f'Expression: {expression}')
             value = expression.evaluate(curryed_evaluate_fragment)
             return str(value)
 
         if fragment.type == 'EQUATION':
-            logger.info(f'Expression fragment: {fragment}')
+            # logger.info(f'Expression fragment: {fragment}')
             expression = fragment.value
-            logger.info(f'Expression: {expression}')
+            # logger.info(f'Expression: {expression}')
             value = expression.evaluate(curryed_evaluate_fragment)
             return str(value)
 
         if fragment.type == 'ASSIGNMENT':
-            logger.info(f'Expression fragment: {fragment}')
+            # logger.info(f'Expression fragment: {fragment}')
             expression = fragment.value
-            logger.info(f'Expression: {expression}')
+            # logger.info(f'Expression: {expression}')
             self.state = expression.evaluate(self.state, curryed_evaluate_fragment)
             return ''
 
 
     def generate_variable(self, variable):
-        logging.info(f'Evaluating variable {variable}')
+        # logging.info(f'Evaluating variable {variable}')
         if variable in self.imports:
             return self.generate_import(variable)
         elif variable in self.state:
@@ -131,7 +131,7 @@ class Generator():
     def pick_choice(self, choice_group, evaluate_fragment):
         # logger.info(f'Choice Group: {choice_group}')
         # logger.info(choice_group)
-        logger.info(f'Weights: {[c.weight for c in choice_group.choices]}')
+        # logger.info(f'Weights: {[c.weight for c in choice_group.choices]}')
         evaluated_weights = []
         for choice in choice_group.choices:
             weight = choice.weight
@@ -143,7 +143,7 @@ class Generator():
                     logger.fatal(f'Choice {weight} in choice_group {choice_group} evaluated to {evaluated_weight}, which could not be converted to an integer weight.')
                     raise
             evaluated_weights.append(weight)
-        logger.info(f'Evaluated weights: {evaluated_weights}')
+        # logger.info(f'Evaluated weights: {evaluated_weights}')
 
         total = sum(evaluated_weights)
         rand = random.randint(1, total)

@@ -21,22 +21,12 @@ class ExpressionParser():
         self.order = order
 
     def parse_expression(self, line):
-        logger.info(f'Parsing expression {line}')
+        # logger.info(f'Parsing expression {line}')
         open_brace = 0
         close_brace = find_matching_brace('[', ']', 0, line)
         expr_start = open_brace + 1
         expr_end = close_brace - 1
         expr_str = line[expr_start:expr_end+1]
-
-        # This should be handled in choice_parser, but I need to verify that.
-        # if re.match(r'\d+', expr_str):
-        #     order = int(expr_str)
-        #     assert line[close_brace+1] == '[', f'{self.current_file} line {self.line_num}: Expression {expr_str} had order override, but did not contain an actual expression following it.'
-        #     open_brace = close_brace+1
-        #     close_brace = find_matching_brace('[', ']', open_brace, line)
-        #     expr_start = open_brace + 1
-        #     expr_end = close_brace - 1
-        #     expr_str = line[expr_start:expr_end+1]
 
         clause_strs = expr_str.split(';')
         clause_strs = [clause_str.strip() for clause_str in clause_strs]
@@ -50,7 +40,7 @@ class ExpressionParser():
     TODO: Consider allowing expressions to reference chosen values.
     '''
     def parse_clause(self, clause_str):
-        logger.info(f'Parsing clause {clause_str}')
+        # logger.info(f'Parsing clause {clause_str}')
         # TODO: Use more advanced logic, so we don't have to use := for assignment.
         for op in VALID_ASSIGNMENT_OPS:
             if op in clause_str:

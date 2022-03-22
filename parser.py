@@ -108,7 +108,7 @@ class Parser():
                 self.current_file,
                 self.line_num)
         weight, weight_type, remainder = weight_parser.parse_weight(line)
-        logger.info(f'Remainder: {remainder}')
+        # logger.info(f'Remainder: {remainder}')
         fragments = choice_parser.parse_choice_data(remainder)
         return Choice(weight, fragments, nesting)
 

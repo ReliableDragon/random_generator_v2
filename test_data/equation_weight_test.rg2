@@ -1,6 +1,6 @@
 equation_weight_test
 
-1 @[#wealth := 10] doobly
+1 @[#wealth := 1000000] doobly
 
 @[10 * #wealth] floobly
-10 noobly
+1000 noobly

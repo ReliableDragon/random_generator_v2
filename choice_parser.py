@@ -32,7 +32,7 @@ class ChoiceParser():
                 logger.fatal(f'Error encountered in file {self.current_file} at line {self.line_num} ({line}): {e.msg}')
                 raise
             idx += length
-            logging.info(f'fragment generated: {fragment}')
+            # logging.info(f'fragment generated: {fragment}')
             # logging.info(f'new index: {idx} makes line {line[idx:]}')
             fragments.append(fragment)
         # logger.info(f'Fragments: {fragments}')
@@ -42,14 +42,14 @@ class ChoiceParser():
         idx = idx
         text = ''
         length = None
-        logger.info(f'Parsing line "{line[idx:]}"')
+        # logger.info(f'Parsing line "{line[idx:]}"')
         if line[idx] in ['$', '@', '#']:
             sym = line[idx]
             line = line[idx+1:]
             length = 1
 
             order, or_length, line = self.get_order_override(line, sym)
-            logger.info(f'Parsed order override {order}, remaining line "{line}"')
+            # logger.info(f'Parsed order override {order}, remaining line "{line}"')
             length += or_length
             call_length = 0
             if sym == '$':
@@ -58,7 +58,7 @@ class ChoiceParser():
                     fragment, call_length = self.parse_var_or_func_call('$' + line, order)
                 else:
                     fragment = ChoiceFragment(value=self.num_subchoices.count, order=order, type='SUBCHOICE')
-                logging.info(f'parsed subchoice fragment: {fragment}')
+                # logging.info(f'parsed subchoice fragment: {fragment}')
                 self.num_subchoices.incr()
             # elif line[idx] =='@':
             #     fragment, length = self.parse_control_fragment(line, idx)
@@ -83,13 +83,13 @@ class ChoiceParser():
             nearest_char = min(sc_loc, ex_loc, vf_loc)
             fragment = ChoiceFragment(line[idx:nearest_char])
             length = nearest_char - idx
-        logging.info(f'length: {length}')
+        # logging.info(f'length: {length}')
         if not length:
             raise ParseError(f'parse_single_fragment is stalled. This should never happen.')
         return fragment, length
 
     def parse_var_or_func_call(self, line, order, idx=0):
-        logger.info(f'Parsing var/func fragment in line "{line[idx:]}"')
+        # logger.info(f'Parsing var/func fragment in line "{line[idx:]}"')
         # Variables and functions can be called "naked" provided the next character is non-word.
         variable_re = re.match(VARIABLE_REGEX, line)
         name_end = None
@@ -119,7 +119,7 @@ class ChoiceParser():
             if value in RESERVED_WORDS:
                 raise ParseError(f'{self.current_file} line {self.line_num}: {value} is a reserved word, and cannot be used as a variable name.')
         # length += call_length
-        logger.info(f'Parsed fragment {line[idx:length]} of length {length}')
+        # logger.info(f'Parsed fragment {line[idx:length]} of length {length}')
         return ChoiceFragment(value=value, type=type, order=order), length
 
     def get_order_override(self, line, sym):
