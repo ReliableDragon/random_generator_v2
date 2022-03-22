@@ -58,13 +58,18 @@ class GeneratorTest(unittest.TestCase):
         result, expected = process_file(filename)
         self.assertEqual(result, expected)
 
-    def test_nested_choices(self):
-        filename = r'test_data\nested_choices_test.rg2'
+    def test_multi_equation(self):
+        filename = r'test_data\multi_equation_test.rg2'
         result, expected = process_file(filename)
         self.assertEqual(result, expected)
 
-    def test_multi_equation(self):
-        filename = r'test_data\multi_equation_test.rg2'
+    def test_multi_import_generation(self):
+        filename = r'test_data\multi_import_generation_test.rg2'
+        result, expected = process_file(filename, True)
+        self.assertEqual(result, expected)
+
+    def test_nested_choices(self):
+        filename = r'test_data\nested_choices_test.rg2'
         result, expected = process_file(filename)
         self.assertEqual(result, expected)
 

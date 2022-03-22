@@ -41,8 +41,9 @@ class Function():
                 return f'int(value) function requires exactly 1 parameter, but got {len(self.args)}.'
         elif self.name == 'rep':
             return self.validate_rep()
-        elif len(self.args) != 1:
-            return f'Dynamic function "{self.name}", interpreted as import, requires exactly 1 parameter, but got {len(self.args)}.'
+        elif len(self.args) not in [1, 2]:
+            logger.info(f'args: {self.args}')
+            return f'Dynamic function "{self.name}", interpreted as import, requires either 1 or 2 parameters, but got {len(self.args)}.'
         else:
             return None
 
@@ -97,23 +98,33 @@ class Function():
             value = [l for l in lst if l]
         elif self.name == 'rep':
             value = self.build_rep_value()
-        elif function.name in self.imports:
-            assert len(function.args) == 1, f'Got function call to import "{function.name}", but call did not provide exactly 1 argument.'
-            value = generate_import(function.name, function.args[0])
-        elif function.name in self.state:
+        elif self.name in imports:
+            assert len(self.args) in [1, 2], f'Got function call to import "{self.name}", but call did not provide exactly 1 argument.'
+            value = []
+            index_to_fetch = int(self.args[0])
+            num_to_generate = 1
+            if len(self.args) >= 2:
+                num_to_generate = int(self.args[1])
+            # logger.info(f'index_to_fetch: {index_to_fetch}, num_to_generate: {num_to_generate}')
+            for i in range(num_to_generate):
+                value.append(generate_import(self.name, index_to_fetch))
+            if num_to_generate == 1:
+                value = value[0]
+            # logger.info(f'value: {value}')
+        elif self.name in self.state:
             assert len(function.args) == 1, f'Got function call to reference state "{function.name}", but call did not provide exactly 1 argument.'
             try:
                 value = state[function.name][function.args[0]]
             except IndexError:
                 value = ''
         else:
-            logger.warning(f'Function {function.name} ran, but didn\'t align with any existing function or import!')
+            logger.warning(f'Function {self.name} ran, but didn\'t align with any existing function or import!')
             value = ''
 
         return value
 
     def build_rep_value(self):
-        logger.info(f'rep() called with args: {self.args}')
+        # logger.info(f'rep() called with args: {self.args}')
         # rep("$", ", $", ", and $.", "effects")
         first = None
         repeated = None
@@ -130,11 +141,19 @@ class Function():
             first, repeated, last_repeated, last = self.args[:4]
             idx = 4
         values = self.args[idx:]
+        if type(values) != list:
+            values = [values]
 
         result = ''
         # logger.info(f'values: {values}, last_val: {last_val}')
-        last_val = len(values[0]) - 1
-        for i in range(len(values[0])):
+        if values:
+            last_val = len(values[0]) - 1
+            num_replacements = len(values[0])
+        else:
+            values = []
+            last_val = 0
+            num_replacements = 0
+        for i in range(num_replacements):
             if i == 0:
                 first_edit = first
                 for v in values:
@@ -172,7 +191,7 @@ class Function():
 
         d = self.args[3]
         choice_vals = [a for a in self.args if type(a) == ChoiceFragment and a.type == 'TEXT']
-        logger.info(f'choice_vals: {choice_vals}')
+        # logger.info(f'choice_vals: {choice_vals}')
         num_strs = 4 if type(d) == ChoiceFragment and d.type == 'TEXT' else 3
         if not (len(choice_vals) in [3, 4] and all(map(lambda a: a.type == 'TEXT', self.args[:num_strs]))):
         # if not (ta == tb == tc == td == str or (ta == tb == tc == str and td == list)):
@@ -183,9 +202,9 @@ class Function():
                 return f'rep(first, repeated, last_repeated?, last, values...) function takes variables for the values parameters, but got {type(arg)} for one of them instead in args {self.args}.'
 
         for cv in choice_vals:
-            logger.info(f'self.args: {self.args}')
-            logger.info(f'cv: {cv}')
-            logger.info(f'num_strs: {num_strs}')
+            # logger.info(f'self.args: {self.args}')
+            # logger.info(f'cv: {cv}')
+            # logger.info(f'num_strs: {num_strs}')
             if not cv.value.count('$') == len(self.args) - num_strs:
                 return f'rep(first, repeated, last_repeated?, last, values...) function requires the same number of $ in each non-values argument as there are variables passed to values. Instead, we saw {self.args}.'
         return None

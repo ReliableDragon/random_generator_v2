@@ -3,6 +3,6 @@ animal:animals.rg2
 fuse_mutations:fuse_mutations.rg2
 additive_mutations:additive_mutations.rg2
 
-1 @[#fmutes := $(#max(0, #gauss(3, 1))); amutes := $(#max(0, #gauss(1.5, 1)))]
+1 @[#fmutes := #fuse_mutations(0, #max(0, #gauss(3, 1))); #amutes := #additive_mutations(0, #max(0, #gauss(1.5, 1))); #fanimals := #animal(0, 10)]
 
-1 A monster with the body of a #animal, 
+1 A(n) #animal with #rep("the $ of a $", ", the $ of a $", ", the $ of a $,", " and the $ of a $", #fmutes, #fanimals)#rep(", as well as $", ", $", " and $", #amutes).

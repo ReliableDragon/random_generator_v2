@@ -1,0 +1,4 @@
+multi_import_generation
+simple_import:simple_import.rg2
+
+10 one #simple_import(0, 5)
