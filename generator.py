@@ -51,7 +51,7 @@ class Generator():
             heappush(values, (i, value))
 
         # logging.info(f'values: {values}')
-        result = ''.join([value for i, value in values])
+        result = ''.join([str(value) for i, value in values])
         # logger.info(f'result: {result}')
         return result
 

@@ -7,8 +7,8 @@ material_type:material_type.txt
 5 $
   1 sheet
   1 pillow
-10000 @material_type bottle filled with $
+10000 #material_type bottle filled with $
   10 nothing
-  10 @material_type
+  10 #material_type
 
 10 a cow

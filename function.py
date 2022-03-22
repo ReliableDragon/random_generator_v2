@@ -1,6 +1,8 @@
 import random
 import logging
 
+from choice_fragment import ChoiceFragment
+
 logger = logging.getLogger('function')
 
 # TODO: Consider making the args fragments, and having the generator evaluate them,
@@ -14,7 +16,7 @@ class Function():
         self.args = args
 
     def validate(self):
-        if self.name in ['gauss', 'gamma', 'rand', 'max', 'min']:
+        if self.name in ['gauss', 'gamma', 'beta', 'rand', 'max', 'min']:
             if len(self.args) != 2:
                 return math_error_msg(self.name, self.args)
         # if self.name == 'gauss':
@@ -38,8 +40,7 @@ class Function():
             if len(self.args) != 1:
                 return f'int(value) function requires exactly 1 parameter, but got {len(self.args)}.'
         elif self.name == 'rep':
-            if len(self.args) not in [4, 5]:
-                return f'rep(first, repeated, last_repeated?, last, values) function requires 4 or 5 parameters, but got {len(self.args)}.'
+            return self.validate_rep()
         elif len(self.args) != 1:
             return f'Dynamic function "{self.name}", interpreted as import, requires exactly 1 parameter, but got {len(self.args)}.'
         else:
@@ -48,13 +49,15 @@ class Function():
     def execute(self, imports, state, generate_import, choice_groups, evaluate_fragment, pick_choice):
         # logger.info(f'Executing function {self}.')
         # logger.info(f'Choice groups: {choice_groups}')
-        if self.name in ['gauss', 'gamma', 'rand', 'max', 'min']:
+        if self.name in ['gauss', 'gamma', 'beta', 'rand', 'max', 'min']:
             x = self.args[0]
             y = self.args[1]
             if self.name == 'gauss':
-                value = int(random.gauss(int(x), int(y)))
+                value = int(random.gauss(float(x), float(y)))
             elif self.name == 'gamma':
-                value = int(random.gammavariate(int(x), int(y)))
+                value = int(random.gammavariate(float(x), float(y)))
+            elif self.name == 'beta':
+                value = int(random.betavariate(float(x), float(y)))
             elif self.name == 'rand':
                 value = int(random.randint(int(x), int(y)))
             elif self.name == 'max':
@@ -68,6 +71,7 @@ class Function():
             value = int(self.args[0])
         # For uniqueness, add another arg here, then filter choice groups.
         elif self.name == '$':
+            # logger.info(f'$() called with args: {self.args}')
             cg_index = int(self.args[0])
             repetition = 1
             uniqueness = None
@@ -85,7 +89,7 @@ class Function():
             value = []
             # for _ in range(repetition):
             value = pick_choice(choice_groups[cg_index], evaluate_fragment, n=repetition, uniqueness=uniqueness)
-            logger.info(f'$-value: {value} of type {type(value)}')
+            # logger.info(f'$-value: {value} of type {type(value)}')
         elif self.name == 'vals':
             lst = self.args[0]
             lst_t = type(lst)
@@ -106,7 +110,6 @@ class Function():
             logger.warning(f'Function {function.name} ran, but didn\'t align with any existing function or import!')
             value = ''
 
-
         return value
 
     def build_rep_value(self):
@@ -114,32 +117,78 @@ class Function():
         # rep("$", ", $", ", and $.", "effects")
         first = None
         repeated = None
-        last_repeated = None
+        last_repeated = ''
         last = None
-        values = None
-        if len(self.args) == 4:
-            first, repeated, last, values = self.args
-        elif len(self.args) == 5:
-            first, repeated, last_repeated, last, values = self.args
+        values = []
+
+        if type(self.args[3]) == list:
+        # if len(self.args) == 4:
+            first, repeated, last = self.args[:3]
+            idx = 3
+        # elif len(self.args) == 5:
+        else:
+            first, repeated, last_repeated, last = self.args[:4]
+            idx = 4
+        values = self.args[idx:]
+
         result = ''
-        last_val = len(values) - 1
         # logger.info(f'values: {values}, last_val: {last_val}')
-        for i, v in enumerate(values):
+        last_val = len(values[0]) - 1
+        for i in range(len(values[0])):
             if i == 0:
-                result += first.replace('$', v)
+                first_edit = first
+                for v in values:
+                    first_edit = first_edit.replace('$', v[i], 1)
+                result += first_edit
             elif i > 0 and i < last_val - 1:
-                result += repeated.replace('$', v)
+                repeated_edit = repeated
+                for v in values:
+                    repeated_edit = repeated_edit.replace('$', v[i], 1)
+                result += repeated_edit
             elif i > 0 and i == last_val - 1:
                 if last_repeated:
-                    result += last_repeated.replace('$', v)
+                    last_repeated_edit = last_repeated
+                    for v in values:
+                        last_repeated_edit = last_repeated_edit.replace('$', v[i], 1)
+                    result += last_repeated_edit
                 else:
-                    result += repeated.replace('$', v)
+                    repeated_edit = repeated
+                    for v in values:
+                        repeated_edit = repeated_edit.replace('$', v[i], 1)
+                    result += repeated_edit
             elif i == last_val:
-                result += last.replace('$', v)
+                last_edit = last
+                for v in values:
+                    last_edit = last_edit.replace('$', v[i], 1)
+                result += last_edit
             else:
                 raise ValueError('Got impossible index!')
-        logger.info(f'Result: {result}')
+
         return result
+
+    def validate_rep(self):
+        if len(self.args) < 4:
+            return f'rep(first, repeated, last_repeated?, last, values...) function at least 4 parameters, but got {len(self.args)}.'
+
+        d = self.args[3]
+        choice_vals = [a for a in self.args if type(a) == ChoiceFragment and a.type == 'TEXT']
+        logger.info(f'choice_vals: {choice_vals}')
+        num_strs = 4 if type(d) == ChoiceFragment and d.type == 'TEXT' else 3
+        if not (len(choice_vals) in [3, 4] and all(map(lambda a: a.type == 'TEXT', self.args[:num_strs]))):
+        # if not (ta == tb == tc == td == str or (ta == tb == tc == str and td == list)):
+            return f'rep(first, repeated, last_repeated?, last, values...) function takes text for the non-values parameters, but got {self.args}.'
+
+        for arg in self.args[num_strs:]:
+            if not type(arg) == ChoiceFragment and arg.value == 'VARIABLE':
+                return f'rep(first, repeated, last_repeated?, last, values...) function takes variables for the values parameters, but got {type(arg)} for one of them instead in args {self.args}.'
+
+        for cv in choice_vals:
+            logger.info(f'self.args: {self.args}')
+            logger.info(f'cv: {cv}')
+            logger.info(f'num_strs: {num_strs}')
+            if not cv.value.count('$') == len(self.args) - num_strs:
+                return f'rep(first, repeated, last_repeated?, last, values...) function requires the same number of $ in each non-values argument as there are variables passed to values. Instead, we saw {self.args}.'
+        return None
 
     def __str__(self):
         return f'Function[name: {self.name}, args: {self.args}]'

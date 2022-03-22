@@ -1,6 +1,6 @@
 multi_equation_test
 
-1 @[2][1+1*5] @["abc"++$(5)*3; "efg"+#gauss(1, 2)*3==5; "I have #wealth wealth."]
+1 @[2][1+1*5] @["abc"++$(5)*3; "efg"++#gauss(1, 2)*3==5; "I have #wealth wealth."]
   5 one
   5 two
   5 three

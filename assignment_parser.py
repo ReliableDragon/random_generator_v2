@@ -19,7 +19,7 @@ class AssignmentParser():
         self.line_num = line_num
 
     def parse_assignment(self, line):
-        logger.info(f'Parsing assignment {line}')
+        # logger.info(f'Parsing assignment {line}')
         for op in VALID_OPS:
             if op in line:
                 parts = line.split(op)

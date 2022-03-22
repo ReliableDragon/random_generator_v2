@@ -157,7 +157,7 @@ class ChoiceParser():
         Allows: Mathematical expressions, state get/set/modify, order customization, function calls, import calls, subcalls. Yikes.
         Let's start at the beginning, I guess.
         '''
-        assert line[0] == '[', f'{self.current_file} line {self.line_num}: Expression call made, but no brackets found!'
+        assert line[0] == '[', f'{self.current_file} line {self.line_num} ({line}): Expression call made, but no brackets found!'
         # TODO: Should this go in expression_parser instead?
         close_bracket = find_matching_brace('[', ']', 0, line)
         if close_bracket == -1:

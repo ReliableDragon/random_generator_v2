@@ -1,0 +1,8 @@
+mutant_generator
+animal:animals.rg2
+fuse_mutations:fuse_mutations.rg2
+additive_mutations:additive_mutations.rg2
+
+1 @[#fmutes := $(#max(0, #gauss(3, 1))); amutes := $(#max(0, #gauss(1.5, 1)))]
+
+1 A monster with the body of a #animal, 

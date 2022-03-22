@@ -15,7 +15,7 @@ def run():
 
     curr_path = os.getcwd()
     if not filepath.startswith(curr_path):
-        filepath = os.join(curr_path, filepath)
+        filepath = os.path.join(curr_path, filepath)
     dir_path = os.path.dirname(filepath)
     filename = os.path.basename(filepath)
 

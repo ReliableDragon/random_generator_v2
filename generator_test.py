@@ -18,13 +18,23 @@ class GeneratorTest(unittest.TestCase):
         result, expected = process_file(filename)
         self.assertEqual(result, expected)
 
-    def test_equation_multigen_nested(self):
-        filename = r'test_data\equation_multigen_nested_test.rg2'
+    def test_equation_float(self):
+        filename = r'test_data\equation_float_test.rg2'
         result, expected = process_file(filename)
         self.assertEqual(result, expected)
 
     def test_equation_list(self):
         filename = r'test_data\equation_list_test.rg2'
+        result, expected = process_file(filename)
+        self.assertEqual(result, expected)
+
+    def test_equation_multilist(self):
+        filename = r'test_data\equation_multilist_test.rg2'
+        result, expected = process_file(filename)
+        self.assertEqual(result, expected)
+
+    def test_equation_multigen_nested(self):
+        filename = r'test_data\equation_multigen_nested_test.rg2'
         result, expected = process_file(filename)
         self.assertEqual(result, expected)
 

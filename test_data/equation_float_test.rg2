@@ -1,0 +1,6 @@
+equation_float
+
+1 @[#fmutes := #max(0, #gauss(3, 1)); #amutes := #max(0, #gauss(1.5, 1))]$ $
+  1 #fmutes
+  $
+  1 #amutes

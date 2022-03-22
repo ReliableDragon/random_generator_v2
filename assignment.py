@@ -50,7 +50,7 @@ class Assignment():
 
     def evaluate(self, state, evaluate_fragment):
         value = self.rhs.evaluate(evaluate_fragment)
-        logger.info(f'state: {state}, assignment: {self}')
+        # logger.info(f'state: {state}, assignment: {self}')
 
         if not self.lhs in state:
             rtype = type(value)
